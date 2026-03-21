@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">☰</button>
+  <div class="topbar-left">
+    <h1 class="page-title">System Analytics</h1>
+    <p class="page-subtitle">Visual overview of platform usage and growth.</p>
+  </div>
+</header>
+
+<section class="cards-grid admin-grid">
+  <article class="card wide">
+    <div class="card-header">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <i class="fa-solid fa-chart-line" style="color: #3b82f6;"></i>
+        <h2 style="margin: 0;">Performance Metrics</h2>
+      </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        <div class="card stat-card">
+            <i class="fa-solid fa-users stat-icon" style="color: #6366f1;"></i>
+            <p class="stat-label">Total Users</p>
+            <h3 id="stat-total-users" class="stat-value">-</h3>
+        </div>
+        <div class="card stat-card">
+            <i class="fa-solid fa-user-check stat-icon" style="color: #22c55e;"></i>
+            <p class="stat-label">Approved Users</p>
+            <h3 id="stat-approved-users" class="stat-value">-</h3>
+        </div>
+        <div class="card stat-card">
+            <i class="fa-solid fa-message stat-icon" style="color: #3b82f6;"></i>
+            <p class="stat-label">Chat Messages</p>
+            <h3 id="stat-total-chats" class="stat-value">-</h3>
+        </div>
+        <div class="card stat-card">
+            <i class="fa-solid fa-briefcase stat-icon" style="color: #ec4899;"></i>
+            <p class="stat-label">Job Applications</p>
+            <h3 id="stat-total-apps" class="stat-value">-</h3>
+        </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
+      <div class="chart-container" style="background: var(--bg-surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-light);">
+        <h3 style="margin-bottom: 1.5rem; font-size: 1rem; color: var(--text-soft);">User Growth (7 Days)</h3>
+        <div style="height: 250px;"><canvas id="userGrowthChart"></canvas></div>
+      </div>
+      <div class="chart-container" style="background: var(--bg-surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-light);">
+        <h3 style="margin-bottom: 1.5rem; font-size: 1rem; color: var(--text-soft);">Chat Activity</h3>
+        <div style="height: 250px;"><canvas id="chatActivityChart"></canvas></div>
+      </div>
+    </div>
+  </article>
+</section>
+
+<style>
+  .stat-card {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      border: 1px solid var(--border-light);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+  }
+  .stat-icon { font-size: 1.5rem; }
+  .stat-label { color: var(--text-soft); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; margin: 0; }
+  .stat-value { font-size: 1.75rem; margin: 0; font-weight: 800; color: var(--text-main); }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    fetch("{{ url_for('admin_stats') }}")
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("stat-total-users").textContent = data.total_users;
+            document.getElementById("stat-approved-users").textContent = data.approved_users;
+            document.getElementById("stat-total-chats").textContent = data.total_chats;
+            document.getElementById("stat-total-apps").textContent = data.total_apps;
+
+            const themeColor = '#c9d1d9';
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: themeColor }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { ticks: { color: themeColor }, grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }
+            };
+
+            new Chart(document.getElementById('userGrowthChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: data.user_growth.map(d => d.date),
+                    datasets: [{
+                        data: data.user_growth.map(d => d.count),
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: commonOptions
+            });
+
+            new Chart(document.getElementById('chatActivityChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: data.chat_activity.map(d => d.date),
+                    datasets: [{
+                        data: data.chat_activity.map(d => d.count),
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
+                    }]
+                },
+                options: commonOptions
+            });
+        });
+});
+</script>
+{% endblock %}

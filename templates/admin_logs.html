@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">☰</button>
+  <div class="topbar-left">
+    <h1 class="page-title">Activity Logs</h1>
+    <p class="page-subtitle">Track system events and user actions.</p>
+  </div>
+</header>
+
+<section class="cards-grid">
+  <article class="card wide">
+    <div class="card-header">
+      <h2>Recent Activities</h2>
+      <span class="badge">Last 100 entries</span>
+    </div>
+    <div class="table-wrapper">
+      <table class="table table-compact">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td style="white-space: nowrap; color: var(--text-soft); font-size: 0.85rem;">{{ log.timestamp }}</td>
+            <td><strong>{{ log.user_name or 'System' }}</strong></td>
+            <td><span class="pill">{{ log.action }}</span></td>
+            <td>{{ log.details }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" style="color:var(--text-soft); text-align:center; padding: 2rem;">No logs recorded yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+</section>
+{% endblock %}

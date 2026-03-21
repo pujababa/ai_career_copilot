@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">☰</button>
+  <div class="topbar-left">
+    <h1 class="page-title">Career Assessment Quiz</h1>
+    <p id="personalized-greeting" class="page-subtitle">Hi {{ current_user.name if current_user else 'User' }}, let's find your career path!</p>
+  </div>
+  <div class="topbar-right">
+    <div class="user-pill">
+      <div class="avatar">{{ current_user.initials if current_user else 'U' }}</div>
+      <div class="user-pill-meta">
+        <span class="user-name">{{ current_user.name if current_user else 'User' }}</span>
+        <span class="user-role">Student</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div id="quiz-container" style="max-width: 800px; margin: 2rem auto;">
+    <!-- Quiz Progress Bar -->
+    <div class="quiz-progress-container" style="margin-bottom: 2rem; padding: 0 1rem;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-soft);">
+        <span>Quiz Progress</span>
+        <span id="progress-text">Question 1 of 5</span>
+      </div>
+      <div style="height: 10px; background: var(--bg-surface); border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color);">
+        <div id="progress-bar-fill" style="width: 20%; height: 100%; background: linear-gradient(90deg, var(--accent-primary), #10b981); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+      </div>
+    </div>
+
+    <form class="quiz-form" id="career-quiz-form" style="padding-bottom: 3rem;">
+      
+      <!-- Step 1 -->
+      <div class="quiz-step card active" data-step="1" style="padding: 2.5rem; border-top: 4px solid var(--accent-primary);">
+        <h3 style="margin-bottom: 1.5rem; font-size: 1.5rem; color: var(--text-main); line-height: 1.4;">1. What describes your ideal project?</h3>
+        <div class="quiz-options" style="display: grid; gap: 1rem;">
+          <label class="quiz-option-card">
+            <input type="radio" name="q1" value="Creating a beautiful and interactive user interface" required>
+            <span class="option-content">Creating a beautiful and interactive user interface</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q1" value="Finding hidden patterns in massive amounts of information">
+            <span class="option-content">Finding hidden patterns in massive amounts of information</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q1" value="Teaching a computer to recognize images or text">
+            <span class="option-content">Teaching a computer to recognize images or text</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q1" value="Building a high-performance system or complex algorithm">
+            <span class="option-content">Building a high-performance system or complex algorithm</span>
+          </label>
+        </div>
+        <div style="display: flex; justify-content: center; margin-top: 2.5rem;">
+          <button type="button" class="btn btn-primary" onclick="nextStep(1)" style="min-width: 160px; padding: 0.8rem 2rem;">Next Question</button>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="quiz-step card" data-step="2" style="padding: 2.5rem; display: none; border-top: 4px solid var(--accent-primary);">
+        <h3 style="margin-bottom: 1.5rem; font-size: 1.5rem; color: var(--text-main); line-height: 1.4;">2. Which technology interests you most?</h3>
+        <div class="quiz-options" style="display: grid; gap: 1rem;">
+          <label class="quiz-option-card">
+            <input type="radio" name="q2" value="Modern frameworks like React or Tailwind">
+            <span class="option-content">Modern frameworks like React or Tailwind</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q2" value="Power bi, SQL, and database visualization">
+            <span class="option-content">Power bi, SQL, and database visualization</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q2" value="Neural networks and deep learning">
+            <span class="option-content">Neural networks and deep learning</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q2" value="System architecture and low-level code">
+            <span class="option-content">System architecture and low-level code</span>
+          </label>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 2.5rem;">
+          <button type="button" class="btn btn-ghost" onclick="prevStep(2)" style="min-width: 120px;">Previous</button>
+          <button type="button" class="btn btn-primary" onclick="nextStep(2)" style="min-width: 160px;">Next Question</button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="quiz-step card" data-step="3" style="padding: 2.5rem; display: none; border-top: 4px solid var(--accent-primary);">
+        <h3 style="margin-bottom: 1.5rem; font-size: 1.5rem; color: var(--text-main); line-height: 1.4;">3. How do you prefer to solve problems?</h3>
+        <div class="quiz-options" style="display: grid; gap: 1rem;">
+          <label class="quiz-option-card">
+            <input type="radio" name="q3" value="Thinking about how a user will interact with a feature">
+            <span class="option-content">Thinking about how a user will interact with a feature</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q3" value="Using statistical evidence to prove a hypothesis">
+            <span class="option-content">Using statistical evidence to prove a hypothesis</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q3" value="Experimenting with data to improve model accuracy">
+            <span class="option-content">Experimenting with data to improve model accuracy</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q3" value="Breaking down complex logic into efficient functions">
+            <span class="option-content">Breaking down complex logic into efficient functions</span>
+          </label>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 2.5rem;">
+          <button type="button" class="btn btn-ghost" onclick="prevStep(3)" style="min-width: 120px;">Previous</button>
+          <button type="button" class="btn btn-primary" onclick="nextStep(3)" style="min-width: 160px;">Next Question</button>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="quiz-step card" data-step="4" style="padding: 2.5rem; display: none; border-top: 4px solid var(--accent-primary);">
+        <h3 style="margin-bottom: 1.5rem; font-size: 1.5rem; color: var(--text-main); line-height: 1.4;">4. When reading a tech blog, which headline grabs you?</h3>
+        <div class="quiz-options" style="display: grid; gap: 1rem;">
+          <label class="quiz-option-card">
+            <input type="radio" name="q4" value="The Future of Web Design: Glassmorphism and 3D">
+            <span class="option-content">"The Future of Web Design: Glassmorphism and 3D"</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q4" value="How Big Data is Revolutionizing Business Decisions">
+            <span class="option-content">"How Big Data is Revolutionizing Business Decisions"</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q4" value="Breaking Through: New AI Models Surpass Human Performance">
+            <span class="option-content">"Breaking Through: New AI Models Surpass Human Performance"</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q4" value="Optimizing Backend Systems for Millions of Users">
+            <span class="option-content">"Optimizing Backend Systems for Millions of Users"</span>
+          </label>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 2.5rem;">
+          <button type="button" class="btn btn-ghost" onclick="prevStep(4)" style="min-width: 120px;">Previous</button>
+          <button type="button" class="btn btn-primary" onclick="nextStep(4)" style="min-width: 160px;">Next Question</button>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="quiz-step card" data-step="5" style="padding: 2.5rem; display: none; border-top: 4px solid var(--accent-primary);">
+        <h3 style="margin-bottom: 1.5rem; font-size: 1.5rem; color: var(--text-main); line-height: 1.4;">5. What do you value most in code?</h3>
+        <div class="quiz-options" style="display: grid; gap: 1rem;">
+          <label class="quiz-option-card">
+            <input type="radio" name="q5" value="Visual appeal and smooth user experience">
+            <span class="option-content">Visual appeal and smooth user experience</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q5" value="Accuracy and clear data representation">
+            <span class="option-content">Accuracy and clear data representation</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q5" value="Ability to learn and adapt over time">
+            <span class="option-content">Ability to learn and adapt over time</span>
+          </label>
+          <label class="quiz-option-card">
+            <input type="radio" name="q5" value="Reliability, performance, and structure">
+            <span class="option-content">Reliability, performance, and structure</span>
+          </label>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 2.5rem;">
+          <button type="button" class="btn btn-ghost" onclick="prevStep(5)" style="min-width: 120px;">Previous</button>
+          <button type="submit" class="btn btn-primary" id="submit-quiz-btn" style="min-width: 160px;">See My Results</button>
+        </div>
+      </div>
+
+    </form>
+</div>
+
+<!-- Results Container -->
+<div id="quiz-result-container" style="display: none; padding-bottom: 5rem; animation: slideUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); background: var(--bg-body);">
+  <div style="max-width: 900px; margin: 0 auto; padding: 2rem 1rem;">
+    <div style="text-align: center; margin-bottom: 4rem;">
+      <div style="display: inline-block; padding: 0.6rem 2rem; background: rgba(59, 130, 246, 0.1); color: var(--accent-primary); border-radius: 99px; font-weight: 700; font-size: 0.95rem; margin-bottom: 1.5rem; border: 1px solid rgba(59, 130, 246, 0.2); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        ✨ Your Career Match ✨
+      </div>
+      <h2 id="quiz-result-title" style="font-size: 4rem; font-weight: 800; background: linear-gradient(135deg, var(--accent-primary) 0%, #10b981 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1.5rem; line-height: 1.1; letter-spacing: -1px;">—</h2>
+      <p id="quiz-result-desc" style="color: var(--text-soft); font-size: 1.35rem; max-width: 750px; margin: 0 auto; line-height: 1.7; font-style: italic; opacity: 0.9;">—</p>
+    </div>
+
+    <div class="accordion-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <!-- Required Skills -->
+      <article class="card accordion-card active" id="skills-section">
+        <button class="accordion-header" onclick="toggleAccordion('skills-section')">
+          <div style="display: flex; align-items: center; gap: 1.25rem;">
+            <div class="icon-box" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i class="fa-solid fa-graduation-cap"></i></div>
+            <h3 style="margin: 0; font-size: 1.35rem; font-weight: 700;">Essential Skills to Master</h3>
+          </div>
+          <i class="fa-solid fa-chevron-down chevron"></i>
+        </button>
+        <div class="accordion-content">
+          <div id="quiz-result-skills" style="display: flex; flex-wrap: wrap; gap: 1rem; padding-bottom: 2rem; padding-top: 0.5rem;"></div>
+        </div>
+      </article>
+
+      <!-- Learning Roadmap -->
+      <article class="card accordion-card" id="roadmap-section">
+        <button class="accordion-header" onclick="toggleAccordion('roadmap-section')">
+          <div style="display: flex; align-items: center; gap: 1.25rem;">
+            <div class="icon-box" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="fa-solid fa-map-location-dot"></i></div>
+            <h3 style="margin: 0; font-size: 1.35rem; font-weight: 700;">Your Learning Roadmap</h3>
+          </div>
+          <i class="fa-solid fa-chevron-down chevron"></i>
+        </button>
+        <div class="accordion-content">
+          <div id="quiz-result-roadmap" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; padding-bottom: 2rem; padding-top: 0.5rem;"></div>
+        </div>
+      </article>
+
+      <!-- Industrial Tools -->
+      <article class="card accordion-card" id="tools-section">
+        <button class="accordion-header" onclick="toggleAccordion('tools-section')">
+          <div style="display: flex; align-items: center; gap: 1.25rem;">
+            <div class="icon-box" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fa-solid fa-toolbox"></i></div>
+            <h3 style="margin: 0; font-size: 1.35rem; font-weight: 700;">Suggested Industry Tools</h3>
+          </div>
+          <i class="fa-solid fa-chevron-down chevron"></i>
+        </button>
+        <div class="accordion-content">
+          <div id="quiz-result-tools" style="display: flex; flex-wrap: wrap; gap: 1rem; padding-bottom: 2rem; padding-top: 0.5rem;"></div>
+        </div>
+      </article>
+
+      <div style="text-align: center; margin-top: 2rem;">
+        <button onclick="location.reload()" class="btn btn-ghost" style="padding: 0.8rem 2rem;">Retake Quiz</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .quiz-step {
+    animation: slideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .quiz-option-card {
+    display: block;
+    cursor: pointer;
+  }
+
+  .quiz-option-card input {
+    display: none;
+  }
+
+  .option-content {
+    display: block;
+    padding: 1.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--bg-surface);
+    color: var(--text-soft);
+  }
+
+  .quiz-option-card input:checked + .option-content {
+    border-color: var(--accent-primary);
+    background: rgba(59, 130, 246, 0.04);
+    color: var(--accent-primary);
+    box-shadow: 0 8px 16px -4px rgba(59, 130, 246, 0.15);
+    transform: scale(1.01);
+  }
+
+  .quiz-option-card:hover .option-content {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+  }
+
+  .accordion-card {
+    padding: 0 !important;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .accordion-card:hover {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .accordion-header {
+    width: 100%;
+    padding: 1.75rem;
+    background: none;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    text-align: left;
+    color: inherit;
+    font-family: inherit;
+  }
+
+  .icon-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+  }
+
+  .chevron { transition: transform 0.3s ease; color: var(--text-soft); }
+  .accordion-card.active .chevron { transform: rotate(180deg); color: var(--accent-primary); }
+
+  .accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 1.75rem;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s ease;
+  }
+
+  .accordion-card.active .accordion-content {
+    max-height: 1200px;
+  }
+
+  .skill-badge, .tool-badge {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: transform 0.2s ease;
+  }
+  
+  .skill-badge:hover, .tool-badge:hover { transform: translateY(-3px); }
+
+  .skill-badge { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+  .tool-badge { background: #fffbeb; color: #b45309; border-color: #fef3c7; }
+
+  .roadmap-step {
+    padding: 1.5rem;
+    background: var(--bg-surface);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    transition: border-color 0.3s ease;
+  }
+  
+  .roadmap-step:hover { border-color: #10b981; }
+</style>
+
+<script>
+  function nextStep(currentStep) {
+    const selected = document.querySelector(`input[name="q${currentStep}"]:checked`);
+    if (!selected) {
+      alert("Please select an option to move forward.");
+      return;
+    }
+
+    if (currentStep < 5) {
+      const currentEl = document.querySelector(`[data-step="${currentStep}"]`);
+      const nextEl = document.querySelector(`[data-step="${currentStep + 1}"]`);
+      
+      currentEl.style.display = 'none';
+      nextEl.style.display = 'block';
+      updateProgress(currentStep + 1);
+    }
+  }
+
+  function prevStep(currentStep) {
+    if (currentStep > 1) {
+      const currentEl = document.querySelector(`[data-step="${currentStep}"]`);
+      const prevEl = document.querySelector(`[data-step="${currentStep - 1}"]`);
+      
+      currentEl.style.display = 'none';
+      prevEl.style.display = 'block';
+      updateProgress(currentStep - 1);
+    }
+  }
+
+  function updateProgress(step) {
+    const percentage = step * 20;
+    document.getElementById('progress-bar-fill').style.width = percentage + '%';
+    document.getElementById('progress-text').innerText = `Question ${step} of 5`;
+  }
+
+  function toggleAccordion(id) {
+    document.getElementById(id).classList.toggle('active');
+  }
+
+  document.getElementById('career-quiz-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const submitBtn = document.getElementById('submit-quiz-btn');
+    const originalText = submitBtn.innerText;
+    submitBtn.innerText = 'Analyzing your potential...';
+    submitBtn.disabled = true;
+
+    const formData = new FormData(this);
+    const payload = {};
+    formData.forEach((value, key) => payload[key] = value);
+
+    try {
+      const response = await fetch("{{ url_for('career_quiz_result') }}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        document.getElementById('quiz-container').style.display = 'none';
+        
+        document.getElementById('quiz-result-title').innerText = data.career;
+        document.getElementById('quiz-result-desc').innerText = data.explanation;
+
+        // Skills
+        const skillsDiv = document.getElementById('quiz-result-skills');
+        skillsDiv.innerHTML = data.skills.map(s => `<div class="skill-badge"><span>✅</span> ${s}</div>`).join('');
+
+        // Tools
+        const toolsDiv = document.getElementById('quiz-result-tools');
+        toolsDiv.innerHTML = data.tools.map(t => `<div class="tool-badge"><span>🛠️</span> ${t}</div>`).join('');
+
+        // Roadmap
+        const roadmapDiv = document.getElementById('quiz-result-roadmap');
+        roadmapDiv.innerHTML = data.roadmap.map((r, i) => `
+          <div class="roadmap-step">
+            <div style="font-weight: 800; color: #10b981; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+               <span style="background: #e1fdf0; padding: 2px 8px; border-radius: 6px; font-size: 0.8rem;">Step ${i+1}</span>
+            </div>
+            <div style="font-size: 1rem; color: var(--text-soft); line-height: 1.6; font-weight: 500;">${r}</div>
+          </div>
+        `).join('');
+
+        document.getElementById('quiz-result-container').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        alert(data.error || 'Submission failed');
+      }
+    } catch (err) {
+      alert('An error occurred. Please check your connection.');
+    } finally {
+      submitBtn.innerText = originalText;
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+{% endblock %}

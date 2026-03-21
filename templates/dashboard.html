@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">☰</button>
+  <div class="topbar-left">
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">Overview of your skill readiness, career matches, and trending roles.</p>
+  </div>
+  <div class="topbar-right">
+    <div class="user-pill">
+      <div class="avatar">{{ current_user.initials if current_user else 'U' }}</div>
+      <div class="user-pill-meta">
+        <span class="user-name">{{ current_user.name if current_user else 'User' }}</span>
+        <span class="user-role">{{ current_user.role|title }} · Data Science track</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="cards-grid dashboard-grid">
+  <article class="card welcome-card">
+    <div class="card-header">
+      <h2>Welcome back, {{ current_user.name.split()[0] if current_user and current_user.name else 'User' }} 👋</h2>
+      <span class="badge">{{ current_user.role|title }} · Data Science track</span>
+    </div>
+    <p>
+      You're building a profile for data science roles. Keep developing your core skills
+      and applying what you learn through projects and practice interviews.
+    </p>
+    <div class="welcome-meta-row">
+      <div class="welcome-meta">
+        <div class="welcome-label">Current goal</div>
+        <div class="welcome-value">Data Scientist</div>
+      </div>
+      <div class="welcome-meta">
+        <div class="welcome-label">Study focus</div>
+        <div class="welcome-value">Python · ML · SQL</div>
+      </div>
+    </div>
+  </article>
+
+  <article class="card career-goal-card">
+    <div class="card-header">
+      <h2>Career goal</h2>
+    </div>
+    <p class="career-goal-text">
+      You're targeting an entry-level <strong>Data Scientist</strong> role over the next
+      6–9 months. The AI copilot will help you bridge gaps in statistics, machine
+      learning, and practical project experience.
+    </p>
+    <ul class="list list-small">
+      <li><span>Preferred industries: Tech, FinTech, EdTech.</span></li>
+      <li><span>Target locations: Remote, Bangalore, Berlin.</span></li>
+    </ul>
+  </article>
+
+  <article class="card" id="skill-gap">
+    <div class="card-header">
+      <h2>Skill gap analysis</h2>
+      <span class="badge badge-soft">Dynamic · Student view</span>
+    </div>
+    <div class="skill-gap-list" data-skill-gap-list>
+      <div class="skill-row" data-skill="HTML" data-skill-target="80">
+        <div class="skill-row-header">
+          <span class="skill-name">HTML</span>
+          <span class="skill-percent" data-skill-percent>80%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" data-skill-bar></div>
+        </div>
+      </div>
+      <div class="skill-row" data-skill="CSS" data-skill-target="72">
+        <div class="skill-row-header">
+          <span class="skill-name">CSS</span>
+          <span class="skill-percent" data-skill-percent>72%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" data-skill-bar></div>
+        </div>
+      </div>
+      <div class="skill-row" data-skill="Python" data-skill-target="88">
+        <div class="skill-row-header">
+          <span class="skill-name">Python</span>
+          <span class="skill-percent" data-skill-percent>88%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" data-skill-bar></div>
+        </div>
+      </div>
+      <div class="skill-row" data-skill="DSA" data-skill-target="65">
+        <div class="skill-row-header">
+          <span class="skill-name">Data Structures &amp; Algorithms</span>
+          <span class="skill-percent" data-skill-percent>65%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" data-skill-bar></div>
+        </div>
+      </div>
+      <div class="skill-row" data-skill="ML" data-skill-target="54">
+        <div class="skill-row-header">
+          <span class="skill-name">Machine Learning</span>
+          <span class="skill-percent" data-skill-percent>54%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" data-skill-bar></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="card-header">
+      <h2>Resume Score</h2>
+    </div>
+    <div class="career-score" style="text-align: center; margin-top: 1rem;">
+      <div class="career-score-main" style="display: flex; justify-content: center; align-items: baseline; gap: 0.25rem; font-size: 3rem; font-weight: 700; color: #1a1a1a;">
+        <span class="career-score-number" style="line-height: 1;">{{ current_user.resume_score if current_user and current_user.resume_score else 0 }}</span>
+        <span class="career-score-max" style="font-size: 1rem; color: #666;">/ 100</span>
+      </div>
+      <p class="career-score-copy" style="margin: 1rem 0; color: #555; text-align: left;">
+        {% if current_user and current_user.resume_score and current_user.resume_score >= 80 %}
+          Your resume is looking great. You're well-prepared to apply for roles!
+        {% elif current_user and current_user.resume_score and current_user.resume_score > 0 %}
+          Your resume could use some improvements. Try adding more projects and technical skills.
+        {% else %}
+          You haven't analyzed your resume yet. Get instant feedback to stand out to recruiters!
+        {% endif %}
+      </p>
+      <a href="{{ url_for('resume_analysis') }}" class="btn btn-outline" style="width: 100%; justify-content: center; margin-top: 0.5rem;">Analyze Resume</a>
+    </div>
+  </article>
+
+  <article class="card wide">
+    <div class="card-header">
+      <h2>Recommended courses</h2>
+      <button class="btn btn-ghost small" type="button">View all</button>
+    </div>
+    <div class="course-grid">
+      <div class="course-card">
+        <div class="course-title">Python for Data Science</div>
+        <div class="course-meta">Beginner · 12 hours · Hands-on notebooks</div>
+        <div class="course-tags">
+          <span class="pill pill-low">Python</span>
+          <span class="pill pill-low">Pandas</span>
+        </div>
+      </div>
+      <div class="course-card">
+        <div class="course-title">Practical Machine Learning</div>
+        <div class="course-meta">Intermediate · 18 hours · Projects</div>
+        <div class="course-tags">
+          <span class="pill pill-low">ML</span>
+          <span class="pill pill-low">Scikit-learn</span>
+        </div>
+      </div>
+      <div class="course-card">
+        <div class="course-title">Data Structures &amp; Algorithms in Python</div>
+        <div class="course-meta">Intermediate · 20 hours · Interview prep</div>
+        <div class="course-tags">
+          <span class="pill pill-low">DSA</span>
+          <span class="pill pill-low">Problem solving</span>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="card wide">
+    <div class="card-header">
+      <h2>AI Career Copilot</h2>
+    </div>
+    <p class="career-score-copy">
+      Open your AI copilot to ask questions, practice interview answers, and get
+      tailored suggestions for your next steps.
+    </p>
+    <a href="{{ url_for('chat') }}" class="btn btn-primary">Open AI Career Copilot</a>
+  </article>
+
+  <article class="card wide career-readiness-card">
+    <div class="card-header">
+      <h2>Placement Readiness Analytics</h2>
+      <span class="badge badge-soft">Live</span>
+    </div>
+    
+    <div id="readiness-loading" style="text-align: center; padding: 2rem; color: #666;">
+      <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: #4f46e5; margin-bottom: 1rem;"></i>
+      <p>Loading your readiness profile...</p>
+    </div>
+
+    <div class="career-readiness-layout" id="readiness-content" style="display: none; grid-template-columns: 1fr 1.5fr; gap: 2rem; align-items: start;">
+      
+      <!-- Readiness Score Gauge -->
+      <div class="career-readiness-score-block" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+        <div class="readiness-score-label" style="font-weight: 600; margin-bottom: 1rem;">Overall Readiness Score</div>
+        <div class="readiness-circular-wrap" style="position: relative; width: 150px; height: 150px;">
+          <svg class="readiness-circular" viewBox="0 0 120 120" style="transform: rotate(-90deg); width: 100%; height: 100%;">
+            <defs>
+              <linearGradient id="readinessGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#4f46e5" />
+                <stop offset="100%" stop-color="#22c55e" />
+              </linearGradient>
+            </defs>
+            <circle class="readiness-circle-bg" cx="60" cy="60" r="52" fill="none" stroke="#eee" stroke-width="10" />
+            <circle class="readiness-circle-fill" id="readiness-circle-fill" cx="60" cy="60" r="52" fill="none" stroke-width="10" stroke-linecap="round" stroke="url(#readinessGrad)" stroke-dasharray="327" stroke-dashoffset="327" style="transition: stroke-dashoffset 1.5s ease-out;"/>
+          </svg>
+          <div class="readiness-score-value" id="readiness-score-value" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: #1a1a1a;">
+            0%
+          </div>
+        </div>
+        <p class="readiness-score-copy" id="readiness-insight" style="margin-top: 1rem; color: #555; background: #f3f4f6; padding: 0.75rem; border-radius: 8px; font-size: 0.9rem;">
+          Evaluating your profile...
+        </p>
+      </div>
+      
+      <!-- Metrics Breakdown Chart -->
+      <div class="career-readiness-chart-block" style="width: 100%;">
+        <div class="readiness-chart-label" style="font-weight: 600; margin-bottom: 1rem;">Readiness Breakdown</div>
+        <div class="readiness-chart-container" style="position: relative; height: 200px; width: 100%;">
+          <canvas id="career-readiness-chart"></canvas>
+        </div>
+        <div style="margin-top: 1rem; font-size: 0.85rem; color: #666; text-align: center;">
+          Score is calculated based on: Resume (40%), Skills (40%), and Projects (20%).
+        </div>
+      </div>
+    </div>
+  </article>
+  <article class="card wide">
+    <div class="card-header">
+      <h2>Recent Announcements</h2>
+      <span class="badge">{{ announcements|length }} items</span>
+    </div>
+    <div style="padding: 1rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+      {% for a in announcements %}
+      <div style="background: var(--bg-surface); border: 1px solid var(--border-light); padding: 1.25rem; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+            <h3 style="margin: 0; font-size: 1.1rem; color: var(--accent-primary); font-weight: 600;">{{ a.title }}</h3>
+            <span style="font-size: 0.7rem; color: var(--text-soft);">{{ a.created_at[:10] }}</span>
+          </div>
+          <p style="margin: 0 0 1.25rem 0; font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">{{ a.content }}</p>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          {% if a.deadline %}
+          <div style="display: flex; align-items: center; gap: 0.5rem; color: #ef4444; font-size: 0.85rem; font-weight: 600; background: rgba(239, 68, 68, 0.05); padding: 0.5rem 0.75rem; border-radius: 6px;">
+            <i class="fa-regular fa-clock"></i>
+            <span>Apply by: {{ a.deadline }}</span>
+          </div>
+          {% endif %}
+          
+          {% if a.app_link %}
+          <a href="{{ a.app_link }}" target="_blank" class="btn btn-primary" style="width: 100%; justify-content: center; font-size: 0.9rem;">
+            Apply Now <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left: 0.5rem; font-size: 0.8rem;"></i>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% else %}
+      <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-soft);">
+        <i class="fa-solid fa-bullhorn" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+        <p>No announcements yet. Stay tuned for updates!</p>
+      </div>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="card wide">
+    <div class="card-header">
+      <h2>Placement Tracker</h2>
+    </div>
+    <p class="career-score-copy">
+      Track your job applications, interviews, and progress towards landing your dream role.
+    </p>
+    <a href="{{ url_for('placement_tracker') }}" class="btn btn-primary" style="margin-top: 1rem;">Open Placement Tracker</a>
+  </article>
+
+  <article class="card wide">
+    <div class="card-header">
+      <h2>Career Assessment Quiz</h2>
+    </div>
+    <p class="career-score-copy">
+      Answer a quick 5-question quiz to discover the best career path for your interests and skills.
+    </p>
+    <a href="{{ url_for('career_quiz') }}" class="btn btn-primary" style="margin-top: 1rem; background-color: #8b5cf6;">Take Career Quiz</a>
+  </article>
+
+</section>
+{% endblock %}
+
+{% block scripts_before %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const response = await fetch('/placement-readiness');
+      if (!response.ok) throw new Error('Failed to fetch readiness data.');
+      const data = await response.json();
+      
+      document.getElementById('readiness-loading').style.display = 'none';
+      const content = document.getElementById('readiness-content');
+      content.style.display = 'grid'; // Note: inline style was grid-template-columns above
+      
+      // Update Main Score & Insight
+      document.getElementById('readiness-score-value').innerText = data.readiness_score + '%';
+      document.getElementById('readiness-insight').innerText = data.insight;
+      
+      // Animate SVG Gauge
+      const scoreCircle = document.getElementById('readiness-circle-fill');
+      const circumference = 327;
+      const offset = circumference - (data.readiness_score / 100) * circumference;
+      // Force a slight delay to trigger CSS transition properly
+      setTimeout(() => {
+        scoreCircle.style.strokeDashoffset = offset;
+      }, 50);
+
+      // Render Bar Chart Breakdown
+      const ctx = document.getElementById('career-readiness-chart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Resume Score', 'Skill Match', 'Projects (x10)'],
+          datasets: [{
+            label: 'Score Output',
+            data: [data.resume_score, data.skill_match, data.capped_projects * 10], // scaled for visual comp
+            backgroundColor: [
+              'rgba(79, 70, 229, 0.8)',
+              'rgba(34, 197, 94, 0.8)',
+              'rgba(245, 158, 11, 0.8)'
+            ],
+            borderRadius: 6,
+            barPercentage: 0.6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              grid: { color: '#f3f4f6' }
+            },
+            x: {
+              grid: { display: false }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.raw + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+      
+    } catch (err) {
+      console.error(err);
+      document.getElementById('readiness-loading').innerHTML = '<p style="color:red;">Error loading readiness data.</p>';
+    }
+  });
+</script>
+{% endblock %}

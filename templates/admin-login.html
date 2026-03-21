@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login – AI Career Copilot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body class="auth-body">
+    <main class="auth-center">
+      <header class="auth-brand-minimal">
+        <div class="brand-logo-circle" style="background: radial-gradient(circle at 30% 0%, #34d399, #059669);">AD</div>
+        <div>
+          <h1 class="brand-title">Admin Portal</h1>
+          <p class="brand-subtitle">System management and analytics dashboard.</p>
+        </div>
+      </header>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="flash-messages">
+            {% for msg in messages %}
+              <p class="flash-msg">{{ msg }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <section class="auth-card">
+        <form class="auth-panel active" method="post" action="{{ url_for('admin_login') }}">
+          <div class="auth-card-header">
+            <h2>Administrator Sign in</h2>
+            <p class="auth-subtitle">Secure access for system administrators only.</p>
+          </div>
+          <div class="form-group">
+            <label for="email">Admin Email</label>
+            <input type="email" name="email" placeholder="admin@careercopilot.com" required />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" name="password" placeholder="••••••••" required />
+          </div>
+          <button class="btn btn-primary btn-full" type="submit" style="background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 14px 30px rgba(16, 185, 129, 0.5);">Login as Admin</button>
+          <div style="margin-top: 15px; text-align: center;">
+            <a href="{{ url_for('index') }}" class="link-muted"><i class="fa-solid fa-arrow-left"></i> Back to selection</a>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Career Copilot – {{ title }}</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    {% block head %}{% endblock %}
+  </head>
+  <body class="app-body" data-page="{{ page }}">
+    <div class="app-shell">
+      <aside class="sidebar" data-sidebar>
+        <div class="sidebar-header">
+          <div class="brand-logo-circle small">AI</div>
+          <div>
+            <div class="sidebar-title">Career Copilot</div>
+            <div class="sidebar-subtitle">{{ nav_subtitle }}</div>
+          </div>
+        </div>
+        <nav class="sidebar-nav">
+          {% if current_user.role == 'student' %}
+          <a href="{{ url_for('dashboard') }}" class="nav-link {{ 'active' if page == 'dashboard' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
+            <span>Dashboard</span>
+          </a>
+          <a href="{{ url_for('chat') }}" class="nav-link {{ 'active' if page == 'chat' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-comments"></i></span>
+            <span>Chat</span>
+          </a>
+          <a href="{{ url_for('skillgap') }}" class="nav-link {{ 'active' if page == 'skillgap' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-sliders"></i></span>
+            <span>Skill Gap</span>
+          </a>
+          <a href="{{ url_for('career_roadmap') }}" class="nav-link {{ 'active' if page == 'career-roadmap' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-route"></i></span>
+            <span>Career Roadmap</span>
+          </a>
+          <a href="{{ url_for('resume_tips') }}" class="nav-link {{ 'active' if page == 'resume-tips' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-file-lines"></i></span>
+            <span>Resume Tips</span>
+          </a>
+          <a href="{{ url_for('resume_analysis') }}" class="nav-link {{ 'active' if page == 'resume-analysis' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-calculator"></i></span>
+            <span>Resume Analyzer</span>
+          </a>
+          <a href="{{ url_for('placement_tracker') }}" class="nav-link {{ 'active' if page == 'placement-tracker' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+            <span>Placement Tracker</span>
+          </a>
+          <a href="{{ url_for('career_quiz') }}" class="nav-link {{ 'active' if page == 'career-quiz' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-clipboard-question"></i></span>
+            <span>Career Quiz</span>
+          </a>
+          {% elif current_user.role == 'admin' %}
+          <a href="{{ url_for('admin') }}" class="nav-link {{ 'active' if page == 'admin' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-user-shield"></i></span>
+            <span>Admin Dashboard</span>
+          </a>
+          <a href="{{ url_for('admin_users') }}" class="nav-link {{ 'active' if page == 'admin-users' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-users-gear"></i></span>
+            <span>User Management</span>
+          </a>
+          <a href="{{ url_for('admin_approvals') }}" class="nav-link {{ 'active' if page == 'admin-approvals' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-user-check"></i></span>
+            <span>Approvals</span>
+          </a>
+          <a href="{{ url_for('admin_analytics') }}" class="nav-link {{ 'active' if page == 'admin-analytics' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-chart-column"></i></span>
+            <span>System Analytics</span>
+          </a>
+          <a href="{{ url_for('admin_logs') }}" class="nav-link {{ 'active' if page == 'admin-logs' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+            <span>Activity Logs</span>
+          </a>
+          <a href="{{ url_for('admin_announcements') }}" class="nav-link {{ 'active' if page == 'admin-announcements' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-bullhorn"></i></span>
+            <span>Announcements</span>
+          </a>
+          {% endif %}
+
+          <li class="sidebar-item">
+        <a {% if current_user.role == 'admin' %} href="{{ url_for('admin_account_settings') }}" {% else %} href="{{ url_for('account_settings') }}" {% endif %} class="sidebar-link {% if page == 'account-settings' %}active{% endif %}" data-nav-link>
+          <i class="fa-solid fa-user-gear"></i>
+          <span>Account Setting</span>
+        </a>
+      </li>
+          <a href="{{ url_for('logout') }}" class="nav-link">
+            <span class="nav-icon"><i class="fa-solid fa-right-from-brain"></i></span>
+            <span>Logout</span>
+          </a>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="sidebar-plan">Starter plan</div>
+          <div class="sidebar-usage">12 / 50 monthly AI sessions</div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+    {% block scripts_before %}{% endblock %}
+    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+    {% block scripts_after %}{% endblock %}
+  </body>
+</html>

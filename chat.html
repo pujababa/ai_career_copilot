@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Career Copilot – Chat</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body class="app-body" data-page="chat">
+  <div class="app-shell">
+    <aside class="sidebar" data-sidebar>
+      <div class="sidebar-header">
+        <div class="brand-logo-circle small">AI</div>
+        <div>
+          <div class="sidebar-title">Career Copilot</div>
+          <div class="sidebar-subtitle">Chat Copilot</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
+          <span>Dashboard</span>
+        </a>
+        <a href="chat.html" class="nav-link active">
+          <span class="nav-icon"><i class="fa-solid fa-comments"></i></span>
+          <span>Chat Copilot</span>
+        </a>
+        <a href="skillgap.html" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-sliders"></i></span>
+          <span>Skill Gap</span>
+        </a>
+        <a href="career-roadmap.html" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-route"></i></span>
+          <span>Career Roadmap</span>
+        </a>
+        <a href="resume-tips.html" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-file-lines"></i></span>
+          <span>Resume Tips</span>
+        </a>
+        <a href="placement-tracker.html" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+          <span>Placement Tracker</span>
+        </a>
+        <a href="career-quiz.html" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-clipboard-question"></i></span>
+          <span>Career Quiz</span>
+        </a>
+        <a href="admin.html" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-user-shield"></i></span>
+          <span>Admin</span>
+        </a>
+        <div class="nav-section-label">Account</div>
+        <a href="index.html" class="nav-link">
+          <span class="nav-icon"><i class="fa-solid fa-right-from-brain"></i></span>
+          <span>Logout</span>
+        </a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">
+          ☰
+        </button>
+        <div class="topbar-left">
+          <h1 class="page-title">Chat Copilot</h1>
+          <p class="page-subtitle">
+            Ask career questions, practice interviews, and explore example prompts.
+          </p>
+        </div>
+        <div class="topbar-right">
+          <button class="btn btn-ghost small" type="button">
+            <i class="fa-solid fa-plus"></i>
+            New chat
+          </button>
+          <div class="user-pill">
+            <div class="avatar">AJ</div>
+            <div class="user-pill-meta">
+              <span class="user-name">Alex Johnson</span>
+              <span class="user-role">Premium preview</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="chat-layout">
+        <aside class="chat-sidebar">
+          <div class="chat-sidebar-header">
+            <h2>Recent conversations</h2>
+          </div>
+          <ul class="chat-conversation-list">
+            <li class="chat-conversation active">
+              <div class="chat-conversation-title">Mock system design interview</div>
+              <div class="chat-conversation-meta">Updated 2h ago</div>
+            </li>
+            <li class="chat-conversation">
+              <div class="chat-conversation-title">Resume bullet polishing</div>
+              <div class="chat-conversation-meta">Yesterday</div>
+            </li>
+            <li class="chat-conversation">
+              <div class="chat-conversation-title">Offer negotiation practice</div>
+              <div class="chat-conversation-meta">Mon</div>
+            </li>
+          </ul>
+
+          <div class="chat-sidebar-footer">
+            <h3 class="chat-sidebar-label">Quick prompts</h3>
+            <button class="prompt-chip" data-demo-prompt>
+              Practice behavioral interview
+            </button>
+            <button class="prompt-chip" data-demo-prompt>
+              Improve my resume summary
+            </button>
+            <button class="prompt-chip" data-demo-prompt>
+              Plan 30-60-90 day onboarding
+            </button>
+          </div>
+        </aside>
+
+        <div class="chat-main">
+          <div class="chat-messages" data-chat-messages>
+            <div class="message bot">
+              <div class="message-avatar">AI</div>
+              <div class="message-content">
+                <div class="message-author">AI Career Copilot</div>
+                <p>
+                  This is a demo chat experience. Messages never leave your browser
+                  and no backend is connected.
+                </p>
+                <p>
+                  Ask me to review a resume bullet, practice an interview question,
+                  or explore roles that fit your skills.
+                </p>
+              </div>
+            </div>
+
+            <div class="message user">
+              <div class="message-avatar">AJ</div>
+              <div class="message-content">
+                <div class="message-author">You</div>
+                <p>
+                  Can you help me prepare for a backend system design interview?
+                </p>
+              </div>
+            </div>
+
+            <div class="message bot">
+              <div class="message-avatar">AI</div>
+              <div class="message-content">
+                <div class="message-author">AI Career Copilot</div>
+                <p>
+                  Absolutely. Let’s pick a practice problem and I’ll walk you through
+                  clarifying questions, high-level design, and trade-offs.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="typing-indicator" data-typing-indicator hidden>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-label">AI is typing…</span>
+          </div>
+
+          <form class="chat-input-bar" data-chat-form>
+            <textarea class="chat-input"
+              placeholder="Type a message to your career copilot… (demo only, no real AI call)" rows="1"
+              required></textarea>
+            <button class="btn btn-ghost small chat-mic" type="button" aria-label="Voice input (coming soon)">
+              <i class="fa-solid fa-microphone-lines"></i>
+            </button>
+            <button class="btn btn-primary" type="submit">
+              <span>Send</span>
+            </button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/script.js" defer></script>
+</body>
+
+</html>

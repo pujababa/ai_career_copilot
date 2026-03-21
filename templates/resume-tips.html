@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">☰</button>
+  <div class="topbar-left">
+    <h1 class="page-title">Resume &amp; Interview Preparation</h1>
+    <p class="page-subtitle">Practical advice for students to build strong resumes and prepare for interviews.</p>
+  </div>
+  <div class="topbar-right">
+    <div class="user-pill">
+      <div class="avatar">{{ current_user.initials if current_user else 'U' }}</div>
+      <div class="user-pill-meta">
+        <span class="user-name">{{ current_user.name if current_user else 'User' }}</span>
+        <span class="user-role">Student · Data Science</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="tips-section">
+  <h2 class="tips-section-title">Resume Tips</h2>
+  <div class="tip-grid">
+    <article class="card tip-card">
+      <div class="tip-icon"><i class="fa-solid fa-file"></i></div>
+      <div class="tip-content">
+        <h3 class="tip-title">Keep resume limited to 1 page</h3>
+        <p class="tip-desc">Concise resumes get read. Focus on your strongest, most relevant experience for each role.</p>
+      </div>
+    </article>
+    <article class="card tip-card">
+      <div class="tip-icon"><i class="fa-solid fa-code"></i></div>
+      <div class="tip-content">
+        <h3 class="tip-title">Highlight technical projects</h3>
+        <p class="tip-desc">Showcase real projects with clear outcomes, tech stack, and your specific contributions.</p>
+      </div>
+    </article>
+    <article class="card tip-card">
+      <div class="tip-icon"><i class="fa-solid fa-award"></i></div>
+      <div class="tip-content">
+        <h3 class="tip-title">Add skills and certifications</h3>
+        <p class="tip-desc">List relevant technologies, tools, and certifications that match the job description.</p>
+      </div>
+    </article>
+    <article class="card tip-card">
+      <div class="tip-icon"><i class="fa-solid fa-align-left"></i></div>
+      <div class="tip-content">
+        <h3 class="tip-title">Use clear formatting</h3>
+        <p class="tip-desc">Use consistent headings, bullet points, and whitespace for easy scanning by recruiters.</p>
+      </div>
+    </article>
+    <article class="card tip-card">
+      <div class="tip-icon"><i class="fa-brands fa-github"></i></div>
+      <div class="tip-content">
+        <h3 class="tip-title">Include GitHub or portfolio links</h3>
+        <p class="tip-desc">Let employers see your code and projects. A live portfolio or GitHub profile strengthens your application.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="tips-section">
+  <h2 class="tips-section-title">Interview Tips</h2>
+  <div class="tip-grid">
+    <article class="card tip-card">
+      <div class="tip-icon"><i class="fa-solid fa-diagram-project"></i></div>
+      <div class="tip-content">
+        <h3 class="tip-title">Practice data structures and algorithms</h3>
+        <p class="tip-desc">Solve problems regularly on LeetCode or similar.</p>
+      </div>
+    </article>
+    <article class="card tip-card">
+      <div class="tip-icon"><i class="fa-solid fa-comments"></i></div>
+      <div class="tip-content">
+        <h3 class="tip-title">Prepare common HR questions</h3>
+        <p class="tip-desc">Practice "Tell me about yourself", "Why this company?", and STAR examples.</p>
+      </div>
+    </article>
+    <article class="card tip-card">
+      <div class="tip-icon"><i class="fa-solid fa-lightbulb"></i></div>
+      <div class="tip-content">
+        <h3 class="tip-title">Explain your projects clearly</h3>
+        <p class="tip-desc">Be ready to walk through problem, solution, tech choices, and what you learned.</p>
+      </div>
+    </article>
+    <article class="card tip-card">
+      <div class="tip-icon"><i class="fa-solid fa-sitemap"></i></div>
+      <div class="tip-content">
+        <h3 class="tip-title">Learn system design basics</h3>
+        <p class="tip-desc">Understand scalability, databases, APIs, and high-level system architectures.</p>
+      </div>
+    </article>
+    <article class="card tip-card">
+      <div class="tip-icon"><i class="fa-solid fa-face-smile"></i></div>
+      <div class="tip-content">
+        <h3 class="tip-title">Maintain confidence during interviews</h3>
+        <p class="tip-desc">Speak clearly, think aloud when solving problems, and stay calm.</p>
+      </div>
+    </article>
+  </div>
+</section>
+{% endblock %}

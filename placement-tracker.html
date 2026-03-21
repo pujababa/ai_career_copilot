@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Career Copilot – Placement Preparation Tracker</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="app-body" data-page="placement-tracker">
+    <div class="app-shell">
+      <aside class="sidebar" data-sidebar>
+        <div class="sidebar-header">
+          <div class="brand-logo-circle small">AI</div>
+          <div>
+            <div class="sidebar-title">Career Copilot</div>
+            <div class="sidebar-subtitle">Placement Tracker</div>
+          </div>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="dashboard.html" class="nav-link">
+            <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
+            <span>Dashboard</span>
+          </a>
+          <a href="chat.html" class="nav-link">
+            <span class="nav-icon"><i class="fa-solid fa-comments"></i></span>
+            <span>Chat</span>
+          </a>
+          <a href="skillgap.html" class="nav-link">
+            <span class="nav-icon"><i class="fa-solid fa-sliders"></i></span>
+            <span>Skill Gap</span>
+          </a>
+          <a href="career-roadmap.html" class="nav-link">
+            <span class="nav-icon"><i class="fa-solid fa-route"></i></span>
+            <span>Career Roadmap</span>
+          </a>
+          <a href="resume-tips.html" class="nav-link">
+            <span class="nav-icon"><i class="fa-solid fa-file-lines"></i></span>
+            <span>Resume Tips</span>
+          </a>
+          <a href="placement-tracker.html" class="nav-link active">
+            <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+            <span>Placement Tracker</span>
+          </a>
+          <a href="career-quiz.html" class="nav-link">
+            <span class="nav-icon"><i class="fa-solid fa-clipboard-question"></i></span>
+            <span>Career Quiz</span>
+          </a>
+          <a href="admin.html" class="nav-link">
+            <span class="nav-icon"><i class="fa-solid fa-user-shield"></i></span>
+            <span>Admin</span>
+          </a>
+          <div class="nav-section-label">Account</div>
+          <a href="index.html" class="nav-link">
+            <span class="nav-icon"><i class="fa-solid fa-right-from-brain"></i></span>
+            <span>Logout</span>
+          </a>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="sidebar-plan">Starter plan</div>
+          <div class="sidebar-usage">
+            12 / 50 monthly AI sessions
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">
+            ☰
+          </button>
+          <div class="topbar-left">
+            <h1 class="page-title">Placement Preparation Tracker</h1>
+            <p class="page-subtitle">
+              Track your preparation steps and stay on course for placement success.
+            </p>
+          </div>
+          <div class="topbar-right">
+            <div class="user-pill">
+              <div class="avatar">AJ</div>
+              <div class="user-pill-meta">
+                <span class="user-name">Alex Johnson</span>
+                <span class="user-role">Student · Data Science</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <article class="card placement-progress-card">
+          <div class="placement-progress-header">
+            <h2 class="placement-progress-title">Your progress</h2>
+            <span class="placement-progress-count" id="placement-progress-count">0 / 6</span>
+          </div>
+          <div class="progress-shell">
+            <div class="progress-label-row">
+              <span class="progress-label">Placement readiness</span>
+              <span class="progress-value" id="placement-progress-percent">0%</span>
+            </div>
+            <div class="progress-track placement-progress-track">
+              <div class="progress-fill placement-progress-fill" id="placement-progress-fill"></div>
+            </div>
+          </div>
+          <p class="placement-motivation" id="placement-motivation">
+            Start your placement journey! Every step counts.
+          </p>
+        </article>
+
+        <article class="card placement-checklist-card">
+          <div class="card-header">
+            <h2>Preparation checklist</h2>
+          </div>
+          <ul class="placement-checklist" data-placement-checklist>
+            <li class="placement-checklist-item">
+              <label class="placement-checkbox-label">
+                <input type="checkbox" class="placement-checkbox" data-placement-item="0" />
+                <span class="placement-checkbox-custom"></span>
+                <span class="placement-checkbox-text">Learn Data Structures &amp; Algorithms</span>
+              </label>
+            </li>
+            <li class="placement-checklist-item">
+              <label class="placement-checkbox-label">
+                <input type="checkbox" class="placement-checkbox" data-placement-item="1" />
+                <span class="placement-checkbox-custom"></span>
+                <span class="placement-checkbox-text">Complete 3 Technical Projects</span>
+              </label>
+            </li>
+            <li class="placement-checklist-item">
+              <label class="placement-checkbox-label">
+                <input type="checkbox" class="placement-checkbox" data-placement-item="2" />
+                <span class="placement-checkbox-custom"></span>
+                <span class="placement-checkbox-text">Build a GitHub Portfolio</span>
+              </label>
+            </li>
+            <li class="placement-checklist-item">
+              <label class="placement-checkbox-label">
+                <input type="checkbox" class="placement-checkbox" data-placement-item="3" />
+                <span class="placement-checkbox-custom"></span>
+                <span class="placement-checkbox-text">Prepare Resume</span>
+              </label>
+            </li>
+            <li class="placement-checklist-item">
+              <label class="placement-checkbox-label">
+                <input type="checkbox" class="placement-checkbox" data-placement-item="4" />
+                <span class="placement-checkbox-custom"></span>
+                <span class="placement-checkbox-text">Practice Mock Interviews</span>
+              </label>
+            </li>
+            <li class="placement-checklist-item">
+              <label class="placement-checkbox-label">
+                <input type="checkbox" class="placement-checkbox" data-placement-item="5" />
+                <span class="placement-checkbox-custom"></span>
+                <span class="placement-checkbox-text">Apply for Internships</span>
+              </label>
+            </li>
+          </ul>
+        </article>
+      </main>
+    </div>
+
+    <script src="js/script.js" defer></script>
+  </body>
+</html>

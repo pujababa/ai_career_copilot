@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">☰</button>
+  <div class="topbar-left">
+    <h1 class="page-title">Career roadmap generator</h1>
+    <p class="page-subtitle">Choose a goal and generate a step-by-step learning path.</p>
+  </div>
+  <div class="topbar-right">
+    <div class="user-pill">
+      <div class="avatar">{{ current_user.initials if current_user else 'U' }}</div>
+      <div class="user-pill-meta">
+        <span class="user-name">{{ current_user.name if current_user else 'User' }}</span>
+        <span class="user-role">Student · Explorer</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="cards-grid">
+  <article class="card">
+    <div class="card-header">
+      <h2><i class="fa-solid fa-compass"></i> Select your career goal</h2>
+    </div>
+    <p class="career-goal-text">
+      Your roadmap is a set of milestones you can complete. Start with one path, then refine with your mentor or AI copilot.
+    </p>
+    <div class="form-group">
+      <label for="career-select">Career goal</label>
+      <select id="career-select" data-roadmap-select>
+        <option value="">Choose a goal…</option>
+        <option value="data-scientist">Data Scientist</option>
+        <option value="web-developer">Web Developer</option>
+        <option value="ai-engineer">AI Engineer</option>
+        <option value="software-developer">Software Developer</option>
+      </select>
+    </div>
+  </article>
+
+  <article class="card wide" data-roadmap-card>
+    <div class="card-header">
+      <h2><span data-roadmap-title>Pick a goal to see your roadmap</span></h2>
+      <span class="badge badge-soft" data-roadmap-badge>Interactive · Demo</span>
+    </div>
+    <p class="career-goal-text" data-roadmap-intro>
+      Choose a career goal on the left to generate a personalised roadmap with concrete learning steps.
+    </p>
+    <ol class="roadmap-steps" data-roadmap-steps></ol>
+  </article>
+</section>
+{% endblock %}

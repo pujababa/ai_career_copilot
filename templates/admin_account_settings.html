@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">☰</button>
+  <div class="topbar-left">
+    <h1 class="page-title">Account Settings</h1>
+    <p class="page-subtitle">Manage your administrator profile and security.</p>
+  </div>
+  <div class="topbar-right">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <span class="badge {{ 'pill-good' if 'successfully' in messages[-1] else 'pill-bad' }}">{{ messages[-1] }}</span>
+      {% endif %}
+    {% endwith %}
+  </div>
+</header>
+
+<section class="cards-grid">
+  <article class="card">
+    <div class="card-header">
+      <h2><i class="fa-solid fa-user-gear" style="margin-right: 0.5rem; color: var(--accent-primary);"></i>Profile Information</h2>
+    </div>
+    <div style="padding: 1.5rem;">
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-size: 0.75rem; color: var(--text-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem;">Full Name</label>
+        <div style="background: var(--bg-surface); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-light); color: var(--text-main);">
+          {{ current_user.name }}
+        </div>
+      </div>
+      <div>
+        <label style="display: block; font-size: 0.75rem; color: var(--text-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem;">Email Address</label>
+        <div style="background: var(--bg-surface); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-light); color: var(--text-main);">
+          {{ current_user.email }}
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="card-header">
+      <h2><i class="fa-solid fa-shield-halved" style="margin-right: 0.5rem; color: var(--warning-text);"></i>Change Password</h2>
+    </div>
+    <form method="post" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+      <div>
+        <label for="current_password" style="display: block; font-size: 0.75rem; color: var(--text-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem;">Current Password</label>
+        <input type="password" id="current_password" name="current_password" class="chat-input" style="width: 100%; border-radius: 8px;" required>
+      </div>
+      <div>
+        <label for="new_password" style="display: block; font-size: 0.75rem; color: var(--text-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem;">New Password</label>
+        <input type="password" id="new_password" name="new_password" class="chat-input" style="width: 100%; border-radius: 8px;" required>
+      </div>
+      <div>
+        <label for="confirm_new_password" style="display: block; font-size: 0.75rem; color: var(--text-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem;">Confirm New Password</label>
+        <input type="password" id="confirm_new_password" name="confirm_new_password" class="chat-input" style="width: 100%; border-radius: 8px;" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="margin-top: 0.5rem; justify-content: center;">Update Password</button>
+    </form>
+  </article>
+</section>
+
+<style>
+  .pill-bad { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+</style>
+{% endblock %}

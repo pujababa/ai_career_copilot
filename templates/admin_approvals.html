@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">☰</button>
+  <div class="topbar-left">
+    <h1 class="page-title">User Approvals</h1>
+    <p class="page-subtitle">Review and approve new student registrations.</p>
+  </div>
+</header>
+
+<section class="cards-grid">
+  <article class="card wide">
+    <div class="card-header">
+      <h2>Pending Requests</h2>
+      <span class="badge pill-good">{{ pending|length }} pending</span>
+    </div>
+    <div class="table-wrapper">
+      <table class="table table-compact">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in pending %}
+          <tr>
+            <td>{{ u.name }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.role }}</td>
+            <td>
+              <form method="post" action="{{ url_for('approve_user', user_id=u.id) }}" style="display:inline">
+                <button class="btn btn-secondary btn-xs" type="submit">Approve</button>
+              </form>
+              <form method="post" action="{{ url_for('reject_user', user_id=u.id) }}" style="display:inline" onsubmit="return confirm('Reject this user?');">
+                <button class="btn btn-ghost btn-xs" type="submit">Reject</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" style="color:var(--text-soft); text-align:center; padding: 2rem;">No pending approvals found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+</section>
+{% endblock %}

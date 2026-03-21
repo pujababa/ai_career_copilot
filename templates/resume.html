@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">☰</button>
+  <div class="topbar-left">
+    <h1 class="page-title">Resume Analyzer</h1>
+    <p class="page-subtitle">Upload your resume to get instant feedback and improvements.</p>
+  </div>
+  <div class="topbar-right">
+    <div class="user-pill">
+      <div class="avatar">{{ current_user.initials if current_user else 'U' }}</div>
+      <div class="user-pill-meta">
+        <span class="user-name">{{ current_user.name if current_user else 'User' }}</span>
+        <span class="user-role">{{ current_user.role|title }}</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="cards-grid">
+  <article class="card">
+    <div class="card-header">
+      <h2>Upload Resume</h2>
+      <span class="badge badge-soft">PDF or DOCX</span>
+    </div>
+    
+    <div id="statusMessage" style="display: none; padding: 1rem; border-radius: 6px; margin-top: 1rem; font-weight: 500;"></div>
+
+    <form id="resumeForm" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1rem;">
+      <div style="border: 2px dashed #ccc; padding: 2rem; border-radius: 8px; text-align: center; background: #fafafa;">
+        <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem; color: #666; margin-bottom: 1rem;"></i>
+        <label for="resumeFile" style="display: block; font-weight: 500; cursor: pointer; color: #4f46e5; text-decoration: underline;">
+          Choose a file to upload
+        </label>
+        <input type="file" id="resumeFile" accept=".pdf, .docx" required style="display: none;">
+        <p id="fileNameDisplay" style="margin-top: 0.5rem; font-size: 0.875rem; color: #666;">No file selected</p>
+      </div>
+      
+      <button type="submit" class="btn btn-primary" id="analyzeBtn" style="align-self: center; padding: 0.75rem 2rem;">
+        Analyze Resume
+      </button>
+    </form>
+    
+    <div id="loading" style="display: none; text-align: center; margin-top: 1.5rem;">
+      <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 1.5rem; color: #4f46e5;"></i>
+      <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #555;">Analyzing document...</p>
+    </div>
+  </article>
+
+  <article class="card" id="results-card" style="display: none;">
+    <div class="card-header">
+      <h2>Analysis Results</h2>
+    </div>
+    
+    <div style="display: flex; align-items: center; gap: 2rem; margin-top: 1rem;">
+      <!-- Score Circle -->
+      <div style="position: relative; width: 120px; height: 120px;">
+        <svg viewBox="0 0 120 120" style="transform: rotate(-90deg);">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="#eee" stroke-width="10" />
+          <circle id="scoreCircle" cx="60" cy="60" r="52" fill="none" stroke="#4f46e5" stroke-width="10" stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="327" style="transition: stroke-dashoffset 1s ease-out;" />
+        </svg>
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <span id="scoreText" style="font-size: 1.75rem; font-weight: 700; color: #1a1a1a;">0</span>
+          <span style="font-size: 0.75rem; color: #666; text-transform: uppercase; font-weight: 500;">Score</span>
+        </div>
+      </div>
+      
+      <!-- Suggestions -->
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 1.5rem;">
+        <div>
+          <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; color: #1a1a1a;">Missing Sections</h3>
+          <ul id="missingSectionsList" style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            <!-- Items injected via JS -->
+          </ul>
+        </div>
+        <div>
+          <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; color: #1a1a1a;">Suggestions for Improvement</h3>
+          <ul id="suggestionsList" style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+            <!-- Items injected via JS -->
+          </ul>
+        </div>
+      </div>
+    </div>
+  </article>
+</section>
+
+<script>
+  const fileInput = document.getElementById('resumeFile');
+  const fileNameDisplay = document.getElementById('fileNameDisplay');
+  const form = document.getElementById('resumeForm');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const loading = document.getElementById('loading');
+  const resultsCard = document.getElementById('results-card');
+  const scoreCircle = document.getElementById('scoreCircle');
+  const scoreText = document.getElementById('scoreText');
+  const suggestionsList = document.getElementById('suggestionsList');
+  const statusMessage = document.getElementById('statusMessage');
+
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      fileNameDisplay.textContent = e.target.files[0].name;
+    } else {
+      fileNameDisplay.textContent = 'No file selected';
+    }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (fileInput.files.length === 0) return;
+
+    analyzeBtn.disabled = true;
+    loading.style.display = 'block';
+    resultsCard.style.display = 'none';
+    statusMessage.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('resume', fileInput.files[0]);
+
+    try {
+      const response = await fetch('/resume-analysis', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Upload failed');
+      
+      // Update Score
+      const score = data.score;
+      scoreText.textContent = score;
+      
+      // Calculate dashoffset (circumference is ~327 for r=52)
+      const circumference = 327;
+      const offset = circumference - (score / 100) * circumference;
+      
+      // Setup dynamic coloring
+      if (score >= 80) {
+        scoreCircle.style.stroke = '#22c55e'; // Green
+      } else if (score >= 50) {
+        scoreCircle.style.stroke = '#f59e0b'; // Yellow
+      } else {
+        scoreCircle.style.stroke = '#ef4444'; // Red
+      }
+      
+      // Force reflow before animating
+      scoreCircle.style.strokeDashoffset = offset;
+      
+      // Update Missing Sections
+      const missingSectionsList = document.getElementById('missingSectionsList');
+      missingSectionsList.innerHTML = '';
+      if (data.missing_sections && data.missing_sections.length === 0) {
+        missingSectionsList.innerHTML = '<li style="background: #dcfce7; color: #166534; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500;">None Detected</li>';
+      } else if (data.missing_sections) {
+        data.missing_sections.forEach(section => {
+          missingSectionsList.innerHTML += `<li style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500;">${section}</li>`;
+        });
+      }
+
+      // Update Suggestions
+      suggestionsList.innerHTML = '';
+      if (data.suggestions.length === 0) {
+        suggestionsList.innerHTML = '<li style="color: #22c55e;"><i class="fa-solid fa-check-circle" style="margin-right: 8px;"></i>Your resume looks solid! No major suggestions.</li>';
+      } else {
+        data.suggestions.forEach(sugg => {
+          suggestionsList.innerHTML += `<li style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.95rem; color: #444;"><i class="fa-solid fa-circle-exclamation" style="color: #f59e0b; margin-top: 4px;"></i><span>${sugg}</span></li>`;
+        });
+      }
+      
+      resultsCard.style.display = 'block';
+      
+      // Show success message
+      statusMessage.textContent = data.message || "File uploaded successfully!";
+      statusMessage.style.backgroundColor = "#dcfce7";
+      statusMessage.style.color = "#166534";
+      statusMessage.style.border = "1px solid #bbf7d0";
+      statusMessage.style.display = "block";
+    } catch (error) {
+      console.error(error);
+      statusMessage.textContent = 'Error: ' + error.message;
+      statusMessage.style.backgroundColor = "#fee2e2";
+      statusMessage.style.color = "#991b1b";
+      statusMessage.style.border = "1px solid #fecaca";
+      statusMessage.style.display = "block";
+    } finally {
+      analyzeBtn.disabled = false;
+      loading.style.display = 'none';
+    }
+  });
+</script>
+{% endblock %}

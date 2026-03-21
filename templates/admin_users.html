@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">☰</button>
+  <div class="topbar-left">
+    <h1 class="page-title">User Management</h1>
+    <p class="page-subtitle">View and manage all registered users.</p>
+  </div>
+</header>
+
+<section class="cards-grid">
+  <article class="card wide">
+    <div class="card-header">
+      <h2>All Users</h2>
+      <span class="badge">{{ users|length }} users</span>
+    </div>
+    <div class="table-wrapper">
+      <table class="table table-compact">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.name }}</td>
+            <td>{{ u.email }}</td>
+            <td><span class="pill {{ 'pill-good' if u.role == 'admin' else '' }}">{{ u.role }}</span></td>
+            <td>
+              {% if u.approved %}
+              <span class="badge pill-good">Approved</span>
+              {% else %}
+              <span class="badge" style="background: var(--warning-bg); color: var(--warning-text);">Pending</span>
+              {% endif %}
+            </td>
+            <td>{{ u.created_at[:10] if u.created_at else 'Not Available' }}</td>
+            <td>
+              {% if u.role != 'admin' %}
+              <form method="post" action="{{ url_for('delete_user', user_id=u.id) }}" style="display:inline" onsubmit="return confirm('Delete this user?');">
+                <button class="btn btn-ghost btn-xs" type="submit">Delete</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+</section>
+{% endblock %}

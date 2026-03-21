@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">☰</button>
+  <div class="topbar-left">
+    <h1 class="page-title">Admin Console</h1>
+    <p class="page-subtitle">Manage users and approve signup requests.</p>
+  </div>
+  <div class="topbar-right">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <span class="badge pill-good">{{ messages[-1] }}</span>
+      {% endif %}
+    {% endwith %}
+  </div>
+</header>
+
+<section class="cards-grid admin-grid">
+  <article class="card">
+    <div class="card-header"><h2>Usage overview</h2></div>
+    <ul class="kpi-column">
+      <li>
+        <div class="kpi-label">Total users</div>
+        <div class="kpi-value">{{ pending|length + approved|length }}</div>
+      </li>
+      <li>
+        <div class="kpi-label">Pending approval</div>
+        <div class="kpi-value">{{ pending|length }}</div>
+      </li>
+      <li>
+        <div class="kpi-label">Approved</div>
+        <div class="kpi-value">{{ approved|length }}</div>
+      </li>
+    </ul>
+  </article>
+
+  <article class="card wide">
+    <div class="card-header">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <i class="fa-solid fa-chart-column" style="color: #3b82f6;"></i>
+        <h2 style="margin: 0;">System Analytics</h2>
+      </div>
+    </div>
+    
+    <!-- Stat Cards Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        <div class="card stat-card">
+            <i class="fa-solid fa-users stat-icon" style="color: #6366f1;"></i>
+            <p class="stat-label">Total Users</p>
+            <h3 id="stat-total-users" class="stat-value">-</h3>
+        </div>
+        <div class="card stat-card">
+            <i class="fa-solid fa-user-check stat-icon" style="color: #22c55e;"></i>
+            <p class="stat-label">Approved Users</p>
+            <h3 id="stat-approved-users" class="stat-value">-</h3>
+        </div>
+        <div class="card stat-card">
+            <i class="fa-solid fa-user-clock stat-icon" style="color: #f59e0b;"></i>
+            <p class="stat-label">Pending Users</p>
+            <h3 id="stat-pending-users" class="stat-value">-</h3>
+        </div>
+        <div class="card stat-card">
+            <i class="fa-solid fa-message stat-icon" style="color: #3b82f6;"></i>
+            <p class="stat-label">Chat Messages</p>
+            <h3 id="stat-total-chats" class="stat-value">-</h3>
+        </div>
+        <div class="card stat-card">
+            <i class="fa-solid fa-briefcase stat-icon" style="color: #ec4899;"></i>
+            <p class="stat-label">Total Applications</p>
+            <h3 id="stat-total-apps" class="stat-value">-</h3>
+        </div>
+        <div class="card stat-card">
+            <i class="fa-solid fa-file-invoice stat-icon" style="color: #8b5cf6;"></i>
+            <p class="stat-label">Total Resumes</p>
+            <h3 id="stat-total-resumes" class="stat-value">-</h3>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+      <div style="background: var(--bg-surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-light);">
+        <h3 style="text-align:center; font-size:1.1rem; margin-bottom:1.5rem; color: var(--text-soft); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <i class="fa-solid fa-chart-pie" style="color: #22c55e;"></i> Users Distribution
+        </h3>
+        <div style="height: 250px; position: relative;">
+            <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+      <div style="background: var(--bg-surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-light);">
+        <h3 style="text-align:center; font-size:1.1rem; margin-bottom:1.5rem; color: var(--text-soft); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <i class="fa-solid fa-user-plus" style="color: #6366f1;"></i> User Growth (Last 7d)
+        </h3>
+        <div style="height: 250px; position: relative;">
+            <canvas id="userGrowthChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+      <div style="background: var(--bg-surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-light);">
+        <h3 style="text-align:center; font-size:1.1rem; margin-bottom:1.5rem; color: var(--text-soft); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <i class="fa-regular fa-comments" style="color: #3b82f6;"></i> Chat Activity (Last 7d)
+        </h3>
+        <div style="height: 250px; position: relative;">
+            <canvas id="chatActivityChart"></canvas>
+        </div>
+      </div>
+      <div style="background: var(--bg-surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-light);">
+        <h3 style="text-align:center; font-size:1.1rem; margin-bottom:1.5rem; color: var(--text-soft); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <i class="fa-solid fa-briefcase" style="color: #ec4899;"></i> Application Trends
+        </h3>
+        <div style="height: 250px; position: relative;">
+            <canvas id="appActivityChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <style>
+  .stat-card {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid var(--border-light);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+  }
+  .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  .stat-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+  }
+  .stat-label {
+      color: var(--text-soft);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin: 0;
+  }
+  .stat-value {
+      font-size: 1.75rem;
+      margin: 0;
+      font-weight: 800;
+      color: var(--text-main);
+  }
+  </style>
+
+  <article class="card wide">
+    <div class="card-header">
+      <h2>Pending user approvals</h2>
+      <span class="badge" data-pending-count>{{ pending|length }} pending</span>
+    </div>
+    <div class="table-wrapper">
+      <table class="table table-compact" data-pending-approvals>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in pending %}
+          <tr data-pending-user>
+            <td>{{ u.name }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.role }}</td>
+            <td data-actions>
+              <form method="post" action="{{ url_for('approve_user', user_id=u.id) }}" style="display:inline">
+                <button class="btn btn-secondary btn-xs" type="submit">Approve</button>
+              </form>
+              <form method="post" action="{{ url_for('reject_user', user_id=u.id) }}" style="display:inline" onsubmit="return confirm('Reject this user?');">
+                <button class="btn btn-ghost btn-xs" type="submit">Reject</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" style="color:var(--text-soft)">No pending approvals.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="card wide">
+    <div class="card-header">
+      <h2>Approved users</h2>
+    </div>
+    <div class="table-wrapper">
+      <table class="table table-compact">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in approved %}
+          <tr>
+            <td>{{ u.name }}</td>
+            <td>{{ u.email }}</td>
+            <td><span class="pill pill-good">{{ u.role }}</span></td>
+            <td>
+              {% if u.role != 'admin' %}
+              <form method="post" action="{{ url_for('delete_user', user_id=u.id) }}" style="display:inline" onsubmit="return confirm('Delete this user permanently?');">
+                <button class="btn btn-ghost btn-xs" type="submit" style="color:var(--text-soft)">Delete</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" style="color:var(--text-soft)">No approved users yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="card wide">
+    <div class="card-header"><h2>Feature flags</h2></div>
+    <div class="feature-flags">
+      <div class="feature-flag">
+        <div>
+          <div class="feature-name">AI system design mode</div>
+          <div class="feature-meta">Demo only.</div>
+        </div>
+        <label class="switch"><input type="checkbox" checked disabled /><span class="slider"></span></label>
+      </div>
+      <div class="feature-flag">
+        <div>
+          <div class="feature-name">Offer negotiation coach</div>
+          <div class="feature-meta">Planned – mock only.</div>
+        </div>
+        <label class="switch"><input type="checkbox" disabled /><span class="slider"></span></label>
+      </div>
+    </div>
+  </article>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    fetch("{{ url_for('admin_stats') }}")
+        .then(response => response.json())
+        .then(data => {
+            // Update Stat Cards
+            document.getElementById("stat-total-users").textContent = data.total_users;
+            document.getElementById("stat-approved-users").textContent = data.approved_users;
+            document.getElementById("stat-pending-users").textContent = data.pending_users;
+            document.getElementById("stat-total-chats").textContent = data.total_chats;
+            document.getElementById("stat-total-apps").textContent = data.total_apps;
+            document.getElementById("stat-total-resumes").textContent = data.total_resumes;
+
+            // Common Theme Color
+            const themeColor = getComputedStyle(document.body).getPropertyValue('--text-main').trim() || '#c9d1d9';
+
+            // Render distribution Pie Chart
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Approved', 'Pending'],
+                    datasets: [{
+                        data: [data.approved_users, data.pending_users],
+                        backgroundColor: ['#22c55e', '#f59e0b'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { color: themeColor, padding: 20, font: { size: 12 } } 
+                        }
+                    }
+                }
+            });
+
+            // Common Chart Options for Line/Bar charts
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        ticks: { color: themeColor, stepSize: 1 },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    },
+                    x: {
+                        ticks: { color: themeColor },
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        titleColor: '#f8fafc',
+                        bodyColor: '#f8fafc',
+                        padding: 10,
+                        displayColors: false
+                    }
+                }
+            };
+
+            // User Growth Chart (Line)
+            new Chart(document.getElementById('userGrowthChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: data.user_growth.map(d => d.date),
+                    datasets: [{
+                        label: 'New Users',
+                        data: data.user_growth.map(d => d.count),
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#6366f1'
+                    }]
+                },
+                options: commonOptions
+            });
+
+            // Chat Activity Chart (Bar)
+            new Chart(document.getElementById('chatActivityChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: data.chat_activity.map(d => d.date),
+                    datasets: [{
+                        label: 'Messages',
+                        data: data.chat_activity.map(d => d.count),
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
+                    }]
+                },
+                options: commonOptions
+            });
+
+            // Application Activity Chart (Line)
+            new Chart(document.getElementById('appActivityChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: data.app_activity.map(d => d.date),
+                    datasets: [{
+                        label: 'Applications',
+                        data: data.app_activity.map(d => d.count),
+                        borderColor: '#ec4899',
+                        backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ec4899'
+                    }]
+                },
+                options: commonOptions
+            });
+        })
+        .catch(err => console.error("Error fetching admin stats:", err));
+});
+</script>
+{% endblock %}
