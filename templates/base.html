@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Career Copilot – {{ title }}</title>
+    <title>AI Career Copilot – {{ title|default('SaaS Workspace') }}</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -13,55 +13,122 @@
     />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
     {% block head %}{% endblock %}
+    <script>
+      // Apply theme preference immediately before render
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'light') {
+        document.documentElement.classList.add('light-mode');
+      }
+    </script>
   </head>
-  <body class="app-body" data-page="{{ page }}">
+  <body class="app-body {% if current_user and current_user.dark_mode == 0 %}light-mode{% endif %}" data-page="{{ page }}">
     <div class="app-shell">
-      <aside class="sidebar" data-sidebar>
+      <aside class="sidebar" data-sidebar id="sidebarNav">
         <div class="sidebar-header">
           <div class="brand-logo-circle small">AI</div>
           <div>
-            <div class="sidebar-title">Career Copilot</div>
-            <div class="sidebar-subtitle">{{ nav_subtitle }}</div>
+            <div class="sidebar-title">AI Career Copilot</div>
+            <div class="sidebar-subtitle">Pro SaaS Edition</div>
           </div>
         </div>
         <nav class="sidebar-nav">
-          {% if current_user.role == 'student' %}
+          {% if current_user and current_user.role == 'student' %}
+          <div class="nav-section-label">Core Hub</div>
           <a href="{{ url_for('dashboard') }}" class="nav-link {{ 'active' if page == 'dashboard' else '' }}">
             <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
             <span>Dashboard</span>
           </a>
+          <a href="{{ url_for('career_recommendation') }}" class="nav-link {{ 'active' if page == 'career-recommendation' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-compass"></i></span>
+            <span>AI Career Match</span>
+          </a>
           <a href="{{ url_for('chat') }}" class="nav-link {{ 'active' if page == 'chat' else '' }}">
-            <span class="nav-icon"><i class="fa-solid fa-comments"></i></span>
-            <span>Chat</span>
+            <span class="nav-icon"><i class="fa-solid fa-robot"></i></span>
+            <span>AI Copilot Chat</span>
           </a>
-          <a href="{{ url_for('skillgap') }}" class="nav-link {{ 'active' if page == 'skillgap' else '' }}">
-            <span class="nav-icon"><i class="fa-solid fa-sliders"></i></span>
-            <span>Skill Gap</span>
-          </a>
-          <a href="{{ url_for('career_roadmap') }}" class="nav-link {{ 'active' if page == 'career-roadmap' else '' }}">
-            <span class="nav-icon"><i class="fa-solid fa-route"></i></span>
-            <span>Career Roadmap</span>
-          </a>
-          <a href="{{ url_for('resume_tips') }}" class="nav-link {{ 'active' if page == 'resume-tips' else '' }}">
-            <span class="nav-icon"><i class="fa-solid fa-file-lines"></i></span>
-            <span>Resume Tips</span>
-          </a>
+
+          <div class="nav-section-label">Resume & Prep</div>
           <a href="{{ url_for('resume_analysis') }}" class="nav-link {{ 'active' if page == 'resume-analysis' else '' }}">
-            <span class="nav-icon"><i class="fa-solid fa-calculator"></i></span>
+            <span class="nav-icon"><i class="fa-solid fa-file-contract"></i></span>
             <span>Resume Analyzer</span>
+          </a>
+          <a href="{{ url_for('resume_builder') }}" class="nav-link {{ 'active' if page == 'resume-builder' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-file-circle-plus"></i></span>
+            <span>AI Resume Builder</span>
+          </a>
+          <a href="{{ url_for('job_match') }}" class="nav-link {{ 'active' if page == 'job-match' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-briefcase"></i></span>
+            <span>Job Match Analyzer</span>
+          </a>
+          <a href="{{ url_for('cover_letter') }}" class="nav-link {{ 'active' if page == 'cover-letter' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-envelope-open-text"></i></span>
+            <span>Cover Letter Generator</span>
           </a>
           <a href="{{ url_for('placement_tracker') }}" class="nav-link {{ 'active' if page == 'placement-tracker' else '' }}">
             <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
             <span>Placement Tracker</span>
           </a>
-          <a href="{{ url_for('career_quiz') }}" class="nav-link {{ 'active' if page == 'career-quiz' else '' }}">
-            <span class="nav-icon"><i class="fa-solid fa-clipboard-question"></i></span>
-            <span>Career Quiz</span>
+
+          <div class="nav-section-label">Skill & Learning</div>
+          <a href="{{ url_for('skillgap') }}" class="nav-link {{ 'active' if page == 'skillgap' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-sliders"></i></span>
+            <span>Skill Gap Analysis</span>
           </a>
-          {% elif current_user.role == 'admin' %}
+          <a href="{{ url_for('roadmap') }}" class="nav-link {{ 'active' if page == 'roadmap' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-route"></i></span>
+            <span>AI Learning Roadmap</span>
+          </a>
+          <a href="{{ url_for('mock_interview') }}" class="nav-link {{ 'active' if page == 'mock-interview' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-headset"></i></span>
+            <span>AI Mock Interview</span>
+          </a>
+          <div class="nav-section-label">Practice & Assessments</div>
+          <a href="{{ url_for('daily_plan') }}" class="nav-link {{ 'active' if page == 'daily-plan' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-calendar-check"></i></span>
+            <span>Daily Prep Plan</span>
+          </a>
+          <a href="{{ url_for('coding_test') }}" class="nav-link {{ 'active' if page == 'coding_test' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-code"></i></span>
+            <span>Coding Assessment</span>
+          </a>
+          <a href="{{ url_for('aptitude') }}" class="nav-link {{ 'active' if page == 'aptitude' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-calculator"></i></span>
+            <span>Aptitude Preparation</span>
+          </a>
+          <a href="{{ url_for('cs_fundamentals') }}" class="nav-link {{ 'active' if page == 'cs_fundamentals' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-code-branch"></i></span>
+            <span>CS Fundamentals</span>
+          </a>
+          <a href="{{ url_for('projects') }}" class="nav-link {{ 'active' if page == 'projects' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-diagram-project"></i></span>
+            <span>Project Recommender</span>
+          </a>
+          <a href="{{ url_for('resources') }}" class="nav-link {{ 'active' if page == 'resources' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-graduation-cap"></i></span>
+            <span>Learning Resources</span>
+          </a>
+
+          <div class="nav-section-label">Analytics & Badges</div>
+          <a href="{{ url_for('analytics') }}" class="nav-link {{ 'active' if page == 'analytics' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span>
+            <span>Progress Analytics</span>
+          </a>
+          <a href="{{ url_for('achievements') }}" class="nav-link {{ 'active' if page == 'achievements' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-trophy"></i></span>
+            <span>Achievements</span>
+          </a>
+
+          <div class="nav-section-label">System</div>
+          <a href="{{ url_for('settings') }}" class="nav-link {{ 'active' if page == 'settings' else '' }}">
+            <span class="nav-icon"><i class="fa-solid fa-sliders"></i></span>
+            <span>Settings</span>
+          </a>
+          
+          {% elif current_user and current_user.role == 'admin' %}
+          <div class="nav-section-label">Admin Control</div>
           <a href="{{ url_for('admin') }}" class="nav-link {{ 'active' if page == 'admin' else '' }}">
             <span class="nav-icon"><i class="fa-solid fa-user-shield"></i></span>
-            <span>Admin Dashboard</span>
+            <span>Admin Overview</span>
           </a>
           <a href="{{ url_for('admin_users') }}" class="nav-link {{ 'active' if page == 'admin-users' else '' }}">
             <span class="nav-icon"><i class="fa-solid fa-users-gear"></i></span>
@@ -85,30 +152,125 @@
           </a>
           {% endif %}
 
-          <li class="sidebar-item">
-        <a {% if current_user.role == 'admin' %} href="{{ url_for('admin_account_settings') }}" {% else %} href="{{ url_for('account_settings') }}" {% endif %} class="sidebar-link {% if page == 'account-settings' %}active{% endif %}" data-nav-link>
-          <i class="fa-solid fa-user-gear"></i>
-          <span>Account Setting</span>
-        </a>
-      </li>
-          <a href="{{ url_for('logout') }}" class="nav-link">
-            <span class="nav-icon"><i class="fa-solid fa-right-from-brain"></i></span>
+          <a href="{{ url_for('logout') }}" class="nav-link" style="margin-top: 12px; color: var(--danger);">
+            <span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
             <span>Logout</span>
           </a>
         </nav>
         <div class="sidebar-footer">
-          <div class="sidebar-plan">Starter plan</div>
-          <div class="sidebar-usage">12 / 50 monthly AI sessions</div>
+          <div class="sidebar-plan"><i class="fa-solid fa-crown" style="color:#f59e0b;"></i> Pro AI Workspace</div>
+          <div class="sidebar-usage">Streak: {{ current_user.study_streak|default(1) }} Days 🔥</div>
         </div>
       </aside>
 
       <main class="main-content">
+        <header class="topbar">
+          <div class="topbar-left" style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+            <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            {% if page and page not in ['dashboard', 'admin', 'index'] %}
+            <button class="nav-back-btn" id="navBackBtn" onclick="handleNavigationBack()" title="Back to previous page" aria-label="Go Back">
+              <i class="fa-solid fa-arrow-left"></i>
+              <span class="nav-back-text">Back</span>
+            </button>
+            {% endif %}
+            <div class="topbar-title-block" style="min-width: 0;">
+              <h1 class="page-title">{{ title|default('Dashboard') }}</h1>
+              <p class="page-subtitle">{{ page_subtitle|default(nav_subtitle|default('Welcome back to your career copilot workspace.')) }}</p>
+            </div>
+          </div>
+          <div class="topbar-right">
+            <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Light/Dark Mode">
+              <i class="fa-solid fa-moon" id="themeIcon"></i>
+            </button>
+            <a href="{{ url_for('notifications') }}" class="notif-btn" title="Notifications">
+              <i class="fa-solid fa-bell"></i>
+              {% if unread_notifs_count and unread_notifs_count > 0 %}<span class="notif-badge"></span>{% endif %}
+            </a>
+            <div class="user-pill">
+              <div class="avatar">{{ current_user.initials|default('U') }}</div>
+              <div class="user-pill-meta">
+                <span class="user-name">{{ current_user.name|default('User') }}</span>
+                <span class="user-role">{{ current_user.target_role|default(current_user.role|default('Student')) }}</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-messages">
+              {% for message in messages %}
+                <div class="flash-msg">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
         {% block content %}{% endblock %}
       </main>
     </div>
 
     {% block scripts_before %}{% endblock %}
     <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+    <script>
+      // Validate session on browser back/forward navigation (prevent stale bfcache after logout without breaking smooth navigation)
+      window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+          fetch('/api/auth/session-check', { cache: 'no-store', credentials: 'same-origin' })
+            .then(function (res) {
+              if (res.status === 401) {
+                window.location.replace("{{ url_for('admin_login') if current_user and current_user.role == 'admin' else url_for('student_login') }}");
+              }
+            })
+            .catch(function () {});
+        }
+      });
+
+      function handleNavigationBack() {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = "{{ url_for('admin') if current_user and current_user.role == 'admin' else url_for('dashboard') }}";
+        }
+      }
+
+      // Theme Toggle handler
+      document.addEventListener('DOMContentLoaded', () => {
+        const themeBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = document.getElementById('themeIcon');
+        
+        function updateThemeIcon() {
+          if (document.documentElement.classList.contains('light-mode') || document.body.classList.contains('light-mode')) {
+            themeIcon.className = 'fa-solid fa-sun';
+            themeIcon.style.color = '#f59e0b';
+          } else {
+            themeIcon.className = 'fa-solid fa-moon';
+            themeIcon.style.color = '#818cf8';
+          }
+        }
+        updateThemeIcon();
+
+        if (themeBtn) {
+          themeBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('light-mode');
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            updateThemeIcon();
+          });
+        }
+
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarNav = document.getElementById('sidebarNav');
+        if (sidebarToggle && sidebarNav) {
+          sidebarToggle.addEventListener('click', () => {
+            sidebarNav.classList.toggle('is-open');
+          });
+        }
+      });
+    </script>
     {% block scripts_after %}{% endblock %}
   </body>
 </html>

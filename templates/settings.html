@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cards-grid" style="display: flex; flex-direction: column; gap: 24px;">
+  <!-- Profile & Career Preferences Card -->
+  <article class="card wide">
+    <div class="card-header">
+      <h2><i class="fa-solid fa-user-pen" style="color: var(--accent); margin-right: 8px;"></i> Student Profile & Career Preferences</h2>
+      <span class="badge badge-soft">Workspace Profile</span>
+    </div>
+
+    <form method="POST" action="{{ url_for('settings') }}" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 16px;">
+      <input type="hidden" name="action" value="profile">
+
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" name="name" value="{{ current_user.name }}" required>
+      </div>
+
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" value="{{ current_user.email }}" disabled style="opacity: 0.7; cursor: not-allowed;">
+      </div>
+
+      <div class="form-group">
+        <label>Target Career Role</label>
+        <input type="text" name="target_role" value="{{ current_user.target_role|default('Software Developer') }}" placeholder="e.g. Full Stack Engineer, Data Scientist" required>
+      </div>
+
+      <div class="form-group">
+        <label>Education / Degree</label>
+        <input type="text" name="education" value="{{ current_user.education|default('') }}" placeholder="e.g. B.Tech in Computer Science & Engineering">
+      </div>
+
+      <div class="form-group">
+        <label>Technical Skills (comma separated)</label>
+        <input type="text" name="skills" value="{{ current_user.skills|default('') }}" placeholder="e.g. Python, JavaScript, React, SQL, Git">
+      </div>
+
+      <div class="form-group">
+        <label>Career Interests / Domains</label>
+        <input type="text" name="interests" value="{{ current_user.interests|default('') }}" placeholder="e.g. Web Development, Machine Learning, Cloud Architecture">
+      </div>
+
+      <div class="form-group">
+        <label>Experience / Internships</label>
+        <input type="text" name="experience" value="{{ current_user.experience|default('') }}" placeholder="e.g. 6-month Software Intern, 2 Hackathon Projects">
+      </div>
+
+      <div class="form-group">
+        <label>Preferred Industry</label>
+        <input type="text" name="preferred_industry" value="{{ current_user.preferred_industry|default('') }}" placeholder="e.g. Enterprise SaaS, FinTech, HealthTech, AI">
+      </div>
+
+      <div class="form-group" style="grid-column: 1 / -1;">
+        <label>Bio / Background Summary</label>
+        <textarea name="bio" rows="3" class="chat-input" placeholder="A brief professional summary highlighting your key strengths and goals...">{{ current_user.bio }}</textarea>
+      </div>
+
+      <div class="form-group" style="grid-column: 1 / -1; display: flex; gap: 24px; align-items: center;">
+        <label class="checkbox" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <input type="checkbox" name="dark_mode" {% if current_user.dark_mode == 1 %}checked{% endif %}> Dark Mode Theme
+        </label>
+        <label class="checkbox" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <input type="checkbox" name="notifications_enabled" {% if current_user.notifications_enabled == 1 %}checked{% endif %}> Enable Daily Study Notifications
+        </label>
+      </div>
+
+      <div style="grid-column: 1 / -1; margin-top: 8px;">
+        <button type="submit" class="btn btn-primary" style="padding: 10px 24px;">
+          <i class="fa-solid fa-floppy-disk"></i> Save Profile & Preferences
+        </button>
+      </div>
+    </form>
+  </article>
+
+  <!-- Security & Password Card -->
+  <article class="card wide">
+    <div class="card-header">
+      <h2><i class="fa-solid fa-shield-halved" style="color: var(--warning); margin-right: 8px;"></i> Account Security & Password</h2>
+      <span class="badge badge-soft">Security</span>
+    </div>
+
+    <form method="POST" action="{{ url_for('settings') }}" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px;">
+      <input type="hidden" name="action" value="password">
+
+      <div class="form-group">
+        <label>Current Password</label>
+        <input type="password" name="current_password" placeholder="••••••••" required>
+      </div>
+
+      <div class="form-group">
+        <label>New Password (min 6 chars)</label>
+        <input type="password" name="new_password" placeholder="••••••••" minlength="6" required>
+      </div>
+
+      <div class="form-group">
+        <label>Confirm New Password</label>
+        <input type="password" name="confirm_password" placeholder="••••••••" minlength="6" required>
+      </div>
+
+      <div style="grid-column: 1 / -1;">
+        <button type="submit" class="btn btn-ghost" style="padding: 10px 24px; border-color: var(--border-strong);">
+          <i class="fa-solid fa-key"></i> Update Password
+        </button>
+      </div>
+    </form>
+  </article>
+</div>
+{% endblock %}

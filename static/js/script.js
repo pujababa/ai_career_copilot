@@ -81,9 +81,6 @@ function setupLoginValidation() {
     if (!passwordValue) {
       showError(passwordInput, passwordError, "Password is required.");
       isValid = false;
-    } else if (passwordValue.length < 6) {
-      showError(passwordInput, passwordError, "Password must be at least 6 characters.");
-      isValid = false;
     }
 
     if (!isValid) event.preventDefault();
@@ -164,7 +161,7 @@ function setupChatDemo() {
               role: "bot",
               author: "AI Career Copilot",
               initials: "AI",
-              text: data.response || "Sorry, something went wrong.",
+              text: data.reply || data.response || "Sorry, something went wrong.",
             });
           }, 1200);
         })

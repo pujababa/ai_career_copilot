@@ -1,0 +1,496 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Header Banner -->
+  <div class="card bg-gradient-primary text-white mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); border-radius: 16px;">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <h2 class="fw-bold mb-1"><i class="fa-solid fa-calculator me-2"></i>Aptitude Preparation & Practice</h2>
+          <p class="mb-0 text-white-50">Master Quantitative, Logical Reasoning, and Verbal Ability for campus placements.</p>
+        </div>
+        <button class="btn btn-light fw-semibold text-primary px-4 py-2" id="startQuickBtn" onclick="scrollToConfig()">
+          <i class="fa-solid fa-play me-1"></i> Start Practice Test
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIG & START SECTION -->
+  <div id="testConfigSection" class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <h4 class="fw-bold mb-3"><i class="fa-solid fa-sliders text-primary me-2"></i>Configure Practice Session</h4>
+      
+      <div class="row g-3 mb-4">
+        <!-- Category Selection Cards -->
+        {% for cat_name, topics in categories.items() %}
+        <div class="col-md-4">
+          <div class="card h-100 category-card border p-3 cursor-pointer" onclick="selectCategory('{{ cat_name }}')" id="catCard-{{ loop.index }}" style="border-radius: 12px; transition: all 0.2s;">
+            <div class="d-flex align-items-center mb-2">
+              <div class="icon-square bg-primary-soft text-primary p-3 rounded-3 me-3">
+                {% if cat_name == 'Quantitative' %}
+                <i class="fa-solid fa-arrow-trend-up fa-xl"></i>
+                {% elif cat_name == 'Logical Reasoning' %}
+                <i class="fa-solid fa-brain fa-xl"></i>
+                {% else %}
+                <i class="fa-solid fa-language fa-xl"></i>
+                {% endif %}
+              </div>
+              <div>
+                <h5 class="fw-bold mb-0">{{ cat_name }}</h5>
+                <small class="text-muted">{{ topics|length }} Topics Available</small>
+              </div>
+            </div>
+            <p class="small text-secondary mb-0">Includes: {{ topics[:3]|join(', ') }}...</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Selected Category</label>
+          <input type="text" class="form-control" id="selectedCategory" value="Quantitative" readonly>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Specific Topic (Optional)</label>
+          <select class="form-select" id="selectedTopic">
+            <option value="All">All Topics</option>
+            {% for cat_name, topics in categories.items() %}
+              {% for t in topics %}
+              <option value="{{ t }}" class="topic-opt topic-cat-{{ cat_name }}">{{ t }}</option>
+              {% endfor %}
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Difficulty</label>
+          <select class="form-select" id="selectedDifficulty">
+            <option value="All">All Difficulties</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Questions Count</label>
+          <select class="form-select" id="selectedCount">
+            <option value="5">5 Questions</option>
+            <option value="10" selected>10 Questions</option>
+            <option value="15">15 Questions</option>
+          </select>
+        </div>
+        <div class="col-12 text-end mt-3">
+          <button class="btn btn-primary btn-lg px-5" onclick="startTest()">
+            <i class="fa-solid fa-circle-play me-2"></i>Begin Timed Test
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVE TEST INTERFACE (Hidden initially) -->
+  <div id="testActiveSection" class="card border-0 shadow-lg mb-4 d-none" style="border-radius: 16px;">
+    <div class="card-header bg-white p-4 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <span class="badge bg-primary px-3 py-2" id="activeCategoryBadge">Quantitative</span>
+        <span class="text-muted ms-2 fw-semibold" id="activeTopicBadge">All Topics</span>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <div class="text-danger fw-bold fs-5">
+          <i class="fa-solid fa-clock me-1"></i> <span id="timerDisplay">10:00</span>
+        </div>
+        <button class="btn btn-outline-danger btn-sm" onclick="confirmSubmitTest()">Submit Test</button>
+      </div>
+    </div>
+    
+    <div class="card-body p-4">
+      <!-- Progress Bar -->
+      <div class="progress mb-4" style="height: 8px; border-radius: 4px;">
+        <div class="progress-bar bg-primary" id="testProgressBar" role="progressbar" style="width: 10%;"></div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="badge bg-light text-dark border px-3 py-2" id="questionCounter">Question 1 of 10</span>
+        <span class="badge bg-soft-info text-info fw-semibold" id="questionDifficulty">Difficulty: Easy</span>
+      </div>
+
+      <!-- Question Box -->
+      <div class="p-4 bg-light rounded-3 mb-4 border">
+        <h5 class="fw-bold mb-0 text-dark" id="questionText">Question content will load here...</h5>
+      </div>
+
+      <!-- Options List -->
+      <div class="options-container d-grid gap-3 mb-4" id="optionsContainer">
+        <!-- Javascript dynamically injects option buttons -->
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="d-flex justify-content-between align-items-center">
+        <button class="btn btn-outline-secondary px-4" id="prevQBtn" onclick="prevQuestion()" disabled>
+          <i class="fa-solid fa-arrow-left me-1"></i> Previous
+        </button>
+        <button class="btn btn-primary px-4" id="nextQBtn" onclick="nextQuestion()">
+          Next <i class="fa-solid fa-arrow-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEST RESULT SECTION (Hidden initially) -->
+  <div id="testResultSection" class="card border-0 shadow-lg mb-4 d-none" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <div class="text-center mb-4">
+        <div class="icon-square bg-success-soft text-success p-4 rounded-circle d-inline-flex mb-2">
+          <i class="fa-solid fa-award fa-3x"></i>
+        </div>
+        <h3 class="fw-bold mb-1">Test Completed!</h3>
+        <p class="text-muted">Here is your detailed performance breakdown and weak-topic analysis.</p>
+      </div>
+
+      <!-- Score Summary Cards -->
+      <div class="row g-3 mb-4 text-center">
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded-3 border">
+            <small class="text-muted d-block fw-semibold">FINAL SCORE</small>
+            <span class="fs-2 fw-bold text-primary" id="resScore">8 / 10</span>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded-3 border">
+            <small class="text-muted d-block fw-semibold">ACCURACY</small>
+            <span class="fs-2 fw-bold text-success" id="resAccuracy">80%</span>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded-3 border">
+            <small class="text-muted d-block fw-semibold">TIME TAKEN</small>
+            <span class="fs-2 fw-bold text-info" id="resTime">03:45</span>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded-3 border">
+            <small class="text-muted d-block fw-semibold">CORRECT / WRONG</small>
+            <span class="fs-2 fw-bold text-dark"><span id="resCorrect" class="text-success">8</span> / <span id="resWrong" class="text-danger">2</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Strong vs Weak Topics -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <div class="card border-success border-2 h-100 p-3" style="border-radius: 12px; background: rgba(16, 185, 129, 0.03);">
+            <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-circle-check me-2"></i>Strong Topics</h6>
+            <div id="strongTopicsContainer" class="d-flex flex-wrap gap-2">
+              <span class="badge bg-success">Percentage</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card border-warning border-2 h-100 p-3" style="border-radius: 12px; background: rgba(245, 158, 11, 0.03);">
+            <h6 class="fw-bold text-warning mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Needs Improvement (Weak Topics)</h6>
+            <div id="weakTopicsContainer" class="d-flex flex-wrap gap-2">
+              <span class="badge bg-warning text-dark">Time & Work</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Review Accordion -->
+      <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-check me-2 text-primary"></i>Question & Answer Review</h5>
+      <div id="reviewAccordion" class="mb-4 d-grid gap-3">
+        <!-- Javascript renders question review list -->
+      </div>
+
+      <div class="text-center">
+        <button class="btn btn-primary px-5 btn-lg" onclick="resetToConfig()">
+          <i class="fa-solid fa-rotate-right me-2"></i>Take Another Test
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT HISTORY TABLE -->
+  <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <h5 class="fw-bold mb-3"><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Recent Aptitude Test History</h5>
+      {% if history %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Score</th>
+              <th>Accuracy</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for h in history %}
+            <tr>
+              <td><small class="text-muted">{{ h.created_at }}</small></td>
+              <td><span class="badge bg-soft-primary text-primary fw-semibold">{{ h.category }}</span></td>
+              <td class="fw-bold">{{ h.score }} / {{ h.total_questions }}</td>
+              <td>
+                {% set acc = ((h.score / h.total_questions) * 100)|round(1) if h.total_questions > 0 else 0 %}
+                <span class="badge {{ 'bg-success' if acc >= 70 else ('bg-warning text-dark' if acc >= 50 else 'bg-danger') }}">
+                  {{ acc }}%
+                </span>
+              </td>
+              <td>
+                {% if acc >= 70 %}
+                <span class="text-success small fw-semibold"><i class="fa-solid fa-check me-1"></i>Passed</span>
+                {% else %}
+                <span class="text-warning small fw-semibold"><i class="fa-solid fa-triangle-exclamation me-1"></i>Needs Practice</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted text-center py-4 mb-0"><i class="fa-solid fa-circle-info me-2"></i>No test history found. Complete your first practice test above!</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+let currentQuestions = [];
+let userAnswers = {};
+let currentQIndex = 0;
+let timerInterval = null;
+let secondsElapsed = 0;
+let selectedCategoryName = "Quantitative";
+
+function selectCategory(catName) {
+  selectedCategoryName = catName;
+  document.getElementById("selectedCategory").value = catName;
+  
+  // Filter topic options in dropdown
+  const opts = document.querySelectorAll(".topic-opt");
+  opts.forEach(opt => {
+    if (opt.classList.contains("topic-cat-" + catName)) {
+      opt.style.display = "block";
+    } else {
+      opt.style.display = "none";
+    }
+  });
+  document.getElementById("selectedTopic").value = "All";
+}
+
+function scrollToConfig() {
+  document.getElementById("testConfigSection").scrollIntoView({ behavior: 'smooth' });
+}
+
+function startTest() {
+  const category = selectedCategoryName;
+  const topic = document.getElementById("selectedTopic").value;
+  const difficulty = document.getElementById("selectedDifficulty").value;
+  const count = document.getElementById("selectedCount").value;
+
+  fetch("/api/aptitude/start", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ category, topic, difficulty, count })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.questions || data.questions.length === 0) {
+      alert("No questions found for the selected criteria. Try selecting 'All Difficulties' or 'All Topics'.");
+      return;
+    }
+
+    currentQuestions = data.questions;
+    userAnswers = {};
+    currentQIndex = 0;
+    secondsElapsed = 0;
+
+    document.getElementById("activeCategoryBadge").innerText = category;
+    document.getElementById("activeTopicBadge").innerText = topic === "All" ? "All Topics" : topic;
+
+    document.getElementById("testConfigSection").classList.add("d-none");
+    document.getElementById("testResultSection").classList.add("d-none");
+    document.getElementById("testActiveSection").classList.remove("d-none");
+
+    startTimer(data.time_limit_seconds || currentQuestions.length * 60);
+    renderQuestion();
+  })
+  .catch(err => {
+    console.error("Error starting test:", err);
+    alert("Failed to start test. Please try again.");
+  });
+}
+
+function startTimer(totalSeconds) {
+  clearInterval(timerInterval);
+  let remaining = totalSeconds;
+  
+  timerInterval = setInterval(() => {
+    secondsElapsed++;
+    remaining--;
+
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    document.getElementById("timerDisplay").innerText = 
+      `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      alert("Time is up! Submitting test automatically.");
+      submitTest();
+    }
+  }, 1000);
+}
+
+function renderQuestion() {
+  const q = currentQuestions[currentQIndex];
+  document.getElementById("questionCounter").innerText = `Question ${currentQIndex + 1} of ${currentQuestions.length}`;
+  document.getElementById("questionDifficulty").innerText = `Difficulty: ${q.difficulty} (${q.topic})`;
+  document.getElementById("questionText").innerText = q.question;
+
+  const pct = ((currentQIndex + 1) / currentQuestions.length) * 100;
+  document.getElementById("testProgressBar").style.width = `${pct}%`;
+
+  const container = document.getElementById("optionsContainer");
+  container.innerHTML = "";
+
+  q.options.forEach((optText, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "btn btn-outline-primary text-start p-3 fw-semibold option-btn rounded-3 border-2";
+    if (userAnswers[q.id] === idx) {
+      btn.className = "btn btn-primary text-start p-3 fw-semibold option-btn rounded-3 border-2";
+    }
+    btn.innerText = `${String.fromCharCode(65 + idx)}. ${optText}`;
+    btn.onclick = () => selectOption(q.id, idx);
+    container.appendChild(btn);
+  });
+
+  document.getElementById("prevQBtn").disabled = (currentQIndex === 0);
+  if (currentQIndex === currentQuestions.length - 1) {
+    document.getElementById("nextQBtn").innerText = "Submit Test";
+    document.getElementById("nextQBtn").onclick = confirmSubmitTest;
+  } else {
+    document.getElementById("nextQBtn").innerText = "Next";
+    document.getElementById("nextQBtn").onclick = nextQuestion;
+  }
+}
+
+function selectOption(qId, optIdx) {
+  userAnswers[qId] = optIdx;
+  renderQuestion();
+}
+
+function prevQuestion() {
+  if (currentQIndex > 0) {
+    currentQIndex--;
+    renderQuestion();
+  }
+}
+
+function nextQuestion() {
+  if (currentQIndex < currentQuestions.length - 1) {
+    currentQIndex++;
+    renderQuestion();
+  }
+}
+
+function confirmSubmitTest() {
+  if (confirm("Are you sure you want to submit your test?")) {
+    submitTest();
+  }
+}
+
+function submitTest() {
+  clearInterval(timerInterval);
+
+  fetch("/api/aptitude/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      category: selectedCategoryName,
+      time_taken: secondsElapsed,
+      answers: userAnswers
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("testActiveSection").classList.add("d-none");
+    document.getElementById("testResultSection").classList.remove("d-none");
+
+    document.getElementById("resScore").innerText = `${data.score} / ${data.total_questions}`;
+    document.getElementById("resAccuracy").innerText = `${data.accuracy}%`;
+    document.getElementById("resCorrect").innerText = data.score;
+    document.getElementById("resWrong").innerText = data.wrong_count;
+
+    const mins = Math.floor(data.time_taken / 60);
+    const secs = data.time_taken % 60;
+    document.getElementById("resTime").innerText = `${mins}m ${secs}s`;
+
+    // Strong Topics
+    const strongBox = document.getElementById("strongTopicsContainer");
+    strongBox.innerHTML = "";
+    if (data.strong_topics && data.strong_topics.length > 0) {
+      data.strong_topics.forEach(st => {
+        strongBox.innerHTML += `<span class="badge bg-success fs-6 px-3 py-2">${st}</span>`;
+      });
+    } else {
+      strongBox.innerHTML = `<span class="text-muted small">None identified in this session</span>`;
+    }
+
+    // Weak Topics
+    const weakBox = document.getElementById("weakTopicsContainer");
+    weakBox.innerHTML = "";
+    if (data.weak_topics && data.weak_topics.length > 0) {
+      data.weak_topics.forEach(wt => {
+        weakBox.innerHTML += `<span class="badge bg-warning text-dark fs-6 px-3 py-2">${wt}</span>`;
+      });
+    } else {
+      weakBox.innerHTML = `<span class="text-success small"><i class="fa-solid fa-check me-1"></i>Great job! No weak topics found.</span>`;
+    }
+
+    // Question Review
+    const reviewBox = document.getElementById("reviewAccordion");
+    reviewBox.innerHTML = "";
+    data.review.forEach((item, index) => {
+      const isCorrect = item.is_correct;
+      const statusIcon = isCorrect ? '<i class="fa-solid fa-circle-check text-success"></i>' : '<i class="fa-solid fa-circle-xmark text-danger"></i>';
+      
+      let userAnsText = "Not Answered";
+      if (item.user_answer !== undefined && item.user_answer !== null && item.options[item.user_answer]) {
+        userAnsText = item.options[item.user_answer];
+      }
+      const correctAnsText = item.options[item.correct_answer];
+
+      reviewBox.innerHTML += `
+        <div class="card border p-3 rounded-3 mb-2">
+          <div class="d-flex align-items-start justify-content-between mb-2">
+            <h6 class="fw-bold mb-0">${statusIcon} Q${index + 1}: ${item.question}</h6>
+            <span class="badge bg-light text-dark border small">${item.topic}</span>
+          </div>
+          <div class="small mb-2">
+            <span class="text-muted">Your Answer:</span> <strong class="${isCorrect ? 'text-success' : 'text-danger'}">${userAnsText}</strong> | 
+            <span class="text-muted">Correct Answer:</span> <strong class="text-success">${correctAnsText}</strong>
+          </div>
+          <div class="p-2 bg-light rounded text-secondary small border-start border-3 border-info">
+            <strong>Explanation:</strong> ${item.explanation}
+          </div>
+        </div>
+      `;
+    });
+  })
+  .catch(err => {
+    console.error("Error submitting test:", err);
+    alert("Failed to submit test. Please check console.");
+  });
+}
+
+function resetToConfig() {
+  document.getElementById("testResultSection").classList.add("d-none");
+  document.getElementById("testConfigSection").classList.remove("d-none");
+}
+</script>
+{% endblock %}

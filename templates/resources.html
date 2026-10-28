@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cards-grid">
+  <article class="card wide">
+    <div class="card-header">
+      <h2><i class="fa-solid fa-graduation-cap" style="color: var(--accent); margin-right: 8px;"></i> Learning Resource Recommendations</h2>
+      <span class="badge badge-green">Curated Resources</span>
+    </div>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">
+      Access top-rated YouTube tutorials, official documentation, GitHub repositories, and free courses mapped to your missing skills.
+    </p>
+
+    {% for cat in categories %}
+    <div style="margin-bottom: 24px;">
+      <h3 style="font-size: 1.1rem; color: var(--text-strong); border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; margin-bottom: 14px;">
+        {{ cat.topic }}
+      </h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+        {% for link in cat.links %}
+        <div class="glass-card" style="padding: 16px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <span class="badge badge-soft" style="font-size: 0.75rem;">{{ link.type }}</span>
+            <h4 style="font-size: 0.95rem; margin: 6px 0 0; color: var(--text-main);">{{ link.title }}</h4>
+          </div>
+          <a href="{{ link.url }}" target="_blank" class="btn btn-secondary btn-xs"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </article>
+</div>
+{% endblock %}

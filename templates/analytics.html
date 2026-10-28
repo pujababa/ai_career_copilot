@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-3">
+  <!-- Header Banner -->
+  <div class="card text-white mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border-radius: 16px;">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <h2 class="fw-bold mb-1"><i class="fa-solid fa-chart-pie me-2"></i>Performance & Progress Analytics</h2>
+          <p class="mb-0 text-white-50">Real-time database analytics tracking your genuine assessment scores, mock interviews, coding tests, and readiness.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <span class="badge bg-warning text-dark px-3 py-2 fs-6"><i class="fa-solid fa-fire me-1"></i>{{ analytics.study_streak }} Day Streak</span>
+          <span class="badge bg-light text-primary px-3 py-2 fs-6"><i class="fa-solid fa-file-lines me-1"></i>ATS: {{ analytics.resume_score }}%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY STATS TILES -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card border-0 shadow-sm p-3 h-100 text-center" style="border-radius: 12px;">
+        <small class="text-muted d-block fw-semibold">Aptitude Avg</small>
+        <span class="fs-3 fw-bold text-success">{{ analytics.avg_aptitude }}%</span>
+        <small class="text-secondary">{{ analytics.total_aptitude }} tests</small>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card border-0 shadow-sm p-3 h-100 text-center" style="border-radius: 12px;">
+        <small class="text-muted d-block fw-semibold">Interview Avg</small>
+        <span class="fs-3 fw-bold text-primary">{{ analytics.avg_interview }}%</span>
+        <small class="text-secondary">{{ analytics.total_interviews }} rounds</small>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card border-0 shadow-sm p-3 h-100 text-center" style="border-radius: 12px;">
+        <small class="text-muted d-block fw-semibold">Coding Avg</small>
+        <span class="fs-3 fw-bold text-indigo">{{ analytics.avg_coding }}%</span>
+        <small class="text-secondary">{{ analytics.total_coding }} attempts</small>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card border-0 shadow-sm p-3 h-100 text-center" style="border-radius: 12px;">
+        <small class="text-muted d-block fw-semibold">CS Fundamentals</small>
+        <span class="fs-3 fw-bold text-info">{{ analytics.avg_mcq }}%</span>
+        <small class="text-secondary">{{ analytics.total_mcq }} quizzes</small>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card border-0 shadow-sm p-3 h-100 text-center" style="border-radius: 12px;">
+        <small class="text-muted d-block fw-semibold">Roadmap Progress</small>
+        <span class="fs-3 fw-bold text-purple">{{ analytics.roadmap_progress }}%</span>
+        <small class="text-secondary">milestones done</small>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card border-0 shadow-sm p-3 h-100 text-center" style="border-radius: 12px;">
+        <small class="text-muted d-block fw-semibold">Resume ATS</small>
+        <span class="fs-3 fw-bold text-warning">{{ analytics.resume_score }}%</span>
+        <small class="text-secondary">profile score</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="row g-4 mb-4">
+    <!-- Competency Radar Matrix -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+        <div class="card-header bg-white p-3 border-bottom d-flex align-items-center justify-content-between">
+          <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-sliders text-purple me-2"></i>Multi-Competency Readiness Matrix</h5>
+          <span class="badge bg-soft-primary text-primary">Live Database Data</span>
+        </div>
+        <div class="card-body p-4" style="min-height: 320px; position: relative;">
+          <canvas id="skillRadarChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interview Score Trend -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+        <div class="card-header bg-white p-3 border-bottom d-flex align-items-center justify-content-between">
+          <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-headset text-primary me-2"></i>Mock Interview Score History</h5>
+          <span class="badge bg-soft-info text-info">Recent Attempts</span>
+        </div>
+        <div class="card-body p-4" style="min-height: 320px; position: relative;">
+          {% if analytics.interview_scores %}
+          <canvas id="interviewScoreChart"></canvas>
+          {% else %}
+          <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center py-5">
+            <i class="fa-solid fa-headset text-muted fa-3x mb-3"></i>
+            <h6 class="text-muted fw-semibold">No Mock Interviews Completed Yet</h6>
+            <p class="small text-secondary mb-3">Practice a technical or HR interview session to view your performance trend.</p>
+            <a href="{{ url_for('mock_interview') }}" class="btn btn-primary btn-sm">Start Mock Interview</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT ATTEMPTS TABLES -->
+  <div class="row g-4 mb-4">
+    <!-- Recent Mock Interviews -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+        <div class="card-header bg-white p-3 border-bottom d-flex align-items-center justify-content-between">
+          <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Recent Mock Interviews</h5>
+          <a href="{{ url_for('mock_interview') }}" class="small text-decoration-none">Practice More &rarr;</a>
+        </div>
+        <div class="card-body p-0">
+          {% if interviews %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3">Category</th>
+                  <th>Score</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for iv in interviews[:5] %}
+                <tr>
+                  <td class="ps-3 fw-medium">{{ iv.category }}</td>
+                  <td>
+                    <span class="badge {% if iv.score >= 80 %}bg-success{% elif iv.score >= 60 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                      {{ iv.score }}%
+                    </span>
+                  </td>
+                  <td class="small text-muted">{{ iv.created_at }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-muted small text-center py-4 mb-0">No mock interview attempts recorded yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Coding Submissions -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+        <div class="card-header bg-white p-3 border-bottom d-flex align-items-center justify-content-between">
+          <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-code text-indigo me-2"></i>Recent Coding Attempts</h5>
+          <a href="{{ url_for('coding_test') }}" class="small text-decoration-none">Code Practice &rarr;</a>
+        </div>
+        <div class="card-body p-0">
+          {% if coding %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3">Problem</th>
+                  <th>Score</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in coding[:5] %}
+                <tr>
+                  <td class="ps-3 fw-medium">{{ c.problem_title }}</td>
+                  <td class="fw-bold">{{ c.score }}%</td>
+                  <td>
+                    <span class="badge {% if c.status == 'Accepted' %}bg-success{% else %}bg-secondary{% endif %}">
+                      {{ c.status }}
+                    </span>
+                  </td>
+                  <td class="small text-muted">{{ c.submitted_at }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-muted small text-center py-4 mb-0">No coding submissions recorded yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Competency Radar Matrix using actual database numbers
+  const radarLabels = {{ analytics.radar_labels|tojson }};
+  const radarValues = {{ analytics.radar_values|tojson }};
+  
+  const ctxRadar = document.getElementById('skillRadarChart');
+  if (ctxRadar) {
+    new Chart(ctxRadar.getContext('2d'), {
+      type: 'radar',
+      data: {
+        labels: radarLabels,
+        datasets: [{
+          label: 'Student Proficiency (%)',
+          data: radarValues,
+          borderColor: '#4f46e5',
+          backgroundColor: 'rgba(79, 70, 229, 0.15)',
+          pointBackgroundColor: '#4f46e5',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: '#4f46e5',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            suggestedMin: 0,
+            suggestedMax: 100,
+            ticks: { stepSize: 20 }
+          }
+        }
+      }
+    });
+  }
+
+  // Interview History Bar Chart
+  const intScores = {{ analytics.interview_scores|tojson }};
+  const intLabels = {{ analytics.interview_labels|tojson }};
+  
+  const ctxInt = document.getElementById('interviewScoreChart');
+  if (ctxInt && intScores && intScores.length > 0) {
+    new Chart(ctxInt.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: intLabels,
+        datasets: [{
+          label: 'Interview Score (%)',
+          data: intScores,
+          backgroundColor: intScores.map(s => s >= 75 ? '#10b981' : (s >= 50 ? '#3b82f6' : '#f59e0b')),
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            suggestedMin: 0,
+            suggestedMax: 100,
+            ticks: { stepSize: 20 }
+          }
+        }
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cards-grid">
+  <article class="card wide">
+    <div class="card-header">
+      <h2><i class="fa-solid fa-trophy" style="color: #f59e0b; margin-right: 8px;"></i> Gamified Achievements & Badges</h2>
+      <span class="badge badge-amber">Progress Rewards</span>
+    </div>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">
+      Earn badges and level up your career readiness profile by completing study streaks, resume optimizations, and mock interviews!
+    </p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+      {% for b in badges %}
+      <div class="glass-card" style="padding: 20px; border-radius: 16px; text-align: center; opacity: {% if b.unlocked %}1{% else %}0.5{% endif %}; border: 1px solid {% if b.unlocked %}rgba(245, 158, 11, 0.4){% else %}var(--border-subtle){% endif %};">
+        <div style="width: 60px; height: 60px; border-radius: 999px; background: {% if b.unlocked %}radial-gradient(circle at 30% 0%, #fde047, #eab308){% else %}rgba(148, 163, 184, 0.2){% endif %}; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 24px; color: {% if b.unlocked %}#0f172a{% else %}var(--text-soft){% endif %}; box-shadow: {% if b.unlocked %}0 10px 25px rgba(234, 179, 8, 0.4){% else %}none{% endif %};">
+          <i class="fa-solid {{ b.icon }}"></i>
+        </div>
+        <h3 style="font-size: 1.1rem; margin: 0 0 6px; color: var(--text-strong);">{{ b.name }}</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 12px;">{{ b.desc }}</p>
+        
+        <span class="badge {% if b.unlocked %}badge-green{% else %}badge-soft{% endif %}">
+          {% if b.unlocked %}<i class="fa-solid fa-check"></i> Unlocked{% else %}<i class="fa-solid fa-lock"></i> Locked{% endif %}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </article>
+</div>
+{% endblock %}

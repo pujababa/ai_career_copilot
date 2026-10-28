@@ -1,0 +1,418 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Header Banner -->
+  <div class="card text-white mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #0d9488 0%, #0284c7 100%); border-radius: 16px;">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <h2 class="fw-bold mb-1"><i class="fa-solid fa-code-branch me-2"></i>CS Fundamentals & Technical MCQs</h2>
+          <p class="mb-0 text-white-50">Master Core Computer Science subjects for technical placement interviews.</p>
+        </div>
+        <button class="btn btn-light fw-semibold text-dark px-4 py-2" onclick="scrollToSubjects()">
+          <i class="fa-solid fa-play me-1"></i> Start Subject Test
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBJECT SELECTION & TEST CONFIG -->
+  <div id="csConfigSection" class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <h4 class="fw-bold mb-3"><i class="fa-solid fa-layer-group text-teal me-2"></i>Select Subject & Difficulty</h4>
+      
+      <div class="row g-3 mb-4" id="subjectCardsGrid">
+        {% for s in subjects %}
+        <div class="col-md-3 col-sm-6">
+          <div class="card h-100 subject-card border p-3 cursor-pointer" onclick="selectSubject('{{ s.name }}')" id="subjCard-{{ s.name|replace(' ', '_') }}" style="border-radius: 12px; transition: all 0.2s;">
+            <div class="d-flex align-items-center mb-2">
+              <div class="icon-square bg-teal-soft text-teal p-3 rounded-3 me-3">
+                <i class="fa-solid {{ s.icon }} fa-lg"></i>
+              </div>
+              <div>
+                <h5 class="fw-bold mb-0 text-dark">{{ s.name }}</h5>
+              </div>
+            </div>
+            <p class="small text-muted mb-0">{{ s.desc }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Selected Subject</label>
+          <input type="text" class="form-control" id="selectedSubject" value="DSA" readonly>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Difficulty Level</label>
+          <select class="form-select" id="csDifficulty">
+            <option value="All">All Difficulties</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Questions Count</label>
+          <select class="form-select" id="csCount">
+            <option value="5">5 Questions</option>
+            <option value="10" selected>10 Questions</option>
+            <option value="15">15 Questions</option>
+          </select>
+        </div>
+        <div class="col-12 text-end mt-3">
+          <button class="btn btn-teal text-white btn-lg px-5" style="background-color: #0d9488;" onclick="startCSMCQ()">
+            <i class="fa-solid fa-play me-2"></i>Start Technical Quiz
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVE TEST SESSION -->
+  <div id="csActiveSection" class="card border-0 shadow-lg mb-4 d-none" style="border-radius: 16px;">
+    <div class="card-header bg-white p-4 border-bottom d-flex align-items-center justify-content-between">
+      <div>
+        <span class="badge bg-teal px-3 py-2 text-white" style="background-color: #0d9488;" id="activeSubjectBadge">DSA</span>
+        <span class="text-muted ms-2 fw-semibold" id="activeCSDifficulty">Difficulty: Easy</span>
+      </div>
+      <button class="btn btn-outline-danger btn-sm" onclick="confirmSubmitCS()">Submit Test</button>
+    </div>
+
+    <div class="card-body p-4">
+      <div class="progress mb-4" style="height: 8px; border-radius: 4px;">
+        <div class="progress-bar bg-teal" id="csProgressBar" role="progressbar" style="width: 10%; background-color: #0d9488;"></div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="badge bg-light text-dark border px-3 py-2" id="csQuestionCounter">Question 1 of 10</span>
+        <span class="badge bg-soft-secondary text-dark" id="csTopicBadge">Topic</span>
+      </div>
+
+      <div class="p-4 bg-light rounded-3 mb-4 border">
+        <h5 class="fw-bold mb-0 text-dark" id="csQuestionText">Question loading...</h5>
+      </div>
+
+      <div class="options-container d-grid gap-3 mb-4" id="csOptionsContainer">
+        <!-- JS dynamic options -->
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center">
+        <button class="btn btn-outline-secondary px-4" id="csPrevBtn" onclick="csPrevQuestion()" disabled>
+          <i class="fa-solid fa-arrow-left me-1"></i> Previous
+        </button>
+        <button class="btn btn-teal text-white px-4" style="background-color: #0d9488;" id="csNextBtn" onclick="csNextQuestion()">
+          Next <i class="fa-solid fa-arrow-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEST RESULT SECTION -->
+  <div id="csResultSection" class="card border-0 shadow-lg mb-4 d-none" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <div class="text-center mb-4">
+        <div class="icon-square bg-teal-soft text-teal p-4 rounded-circle d-inline-flex mb-2">
+          <i class="fa-solid fa-square-poll-vertical fa-3x"></i>
+        </div>
+        <h3 class="fw-bold mb-1">CS MCQ Evaluation Completed!</h3>
+        <p class="text-muted">Review your score and topic-wise strengths and weak areas below.</p>
+      </div>
+
+      <div class="row g-3 mb-4 text-center">
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded-3 border">
+            <small class="text-muted d-block fw-semibold">SCORE</small>
+            <span class="fs-2 fw-bold text-teal" style="color: #0d9488;" id="csResScore">8 / 10</span>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded-3 border">
+            <small class="text-muted d-block fw-semibold">ACCURACY</small>
+            <span class="fs-2 fw-bold text-success" id="csResAccuracy">80%</span>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded-3 border">
+            <small class="text-muted d-block fw-semibold">CORRECT</small>
+            <span class="fs-2 fw-bold text-success" id="csResCorrect">8</span>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded-3 border">
+            <small class="text-muted d-block fw-semibold">WRONG</small>
+            <span class="fs-2 fw-bold text-danger" id="csResWrong">2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Strong vs Weak Topics -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <div class="card border-success border-2 h-100 p-3" style="border-radius: 12px; background: rgba(16, 185, 129, 0.03);">
+            <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-circle-check me-2"></i>Strong Technical Topics</h6>
+            <div id="csStrongContainer" class="d-flex flex-wrap gap-2"></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card border-warning border-2 h-100 p-3" style="border-radius: 12px; background: rgba(245, 158, 11, 0.03);">
+            <h6 class="fw-bold text-warning mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Needs Revision (Weak Topics)</h6>
+            <div id="csWeakContainer" class="d-flex flex-wrap gap-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Review Accordion -->
+      <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-check me-2 text-teal"></i>Detailed Answer & Explanation Review</h5>
+      <div id="csReviewAccordion" class="mb-4 d-grid gap-3"></div>
+
+      <div class="text-center">
+        <button class="btn btn-teal text-white px-5 btn-lg" style="background-color: #0d9488;" onclick="resetCSConfig()">
+          <i class="fa-solid fa-rotate-right me-2"></i>Take Another MCQ Quiz
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT HISTORY TABLE -->
+  <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <h5 class="fw-bold mb-3"><i class="fa-solid fa-clock-rotate-left text-teal me-2"></i>Recent CS MCQ Quiz History</h5>
+      {% if history %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Subject</th>
+              <th>Score</th>
+              <th>Accuracy</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for h in history %}
+            <tr>
+              <td><small class="text-muted">{{ h.created_at }}</small></td>
+              <td><span class="badge bg-soft-info text-info fw-semibold">{{ h.subject }}</span></td>
+              <td class="fw-bold">{{ h.score }} / {{ h.total_questions }}</td>
+              <td>
+                {% set acc = ((h.score / h.total_questions) * 100)|round(1) if h.total_questions > 0 else 0 %}
+                <span class="badge {{ 'bg-success' if acc >= 70 else ('bg-warning text-dark' if acc >= 50 else 'bg-danger') }}">
+                  {{ acc }}%
+                </span>
+              </td>
+              <td>
+                {% if acc >= 70 %}
+                <span class="text-success small fw-semibold"><i class="fa-solid fa-check me-1"></i>Proficient</span>
+                {% else %}
+                <span class="text-warning small fw-semibold"><i class="fa-solid fa-triangle-exclamation me-1"></i>Needs Revision</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted text-center py-4 mb-0"><i class="fa-solid fa-circle-info me-2"></i>No CS MCQ test history found. Take your first quiz above!</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+let csQuestions = [];
+let csUserAnswers = {};
+let csCurrentIndex = 0;
+let selectedSubjectName = "DSA";
+
+function scrollToSubjects() {
+  document.getElementById("csConfigSection").scrollIntoView({ behavior: 'smooth' });
+}
+
+function selectSubject(subjName) {
+  selectedSubjectName = subjName;
+  document.getElementById("selectedSubject").value = subjName;
+}
+
+function startCSMCQ() {
+  const subject = selectedSubjectName;
+  const difficulty = document.getElementById("csDifficulty").value;
+  const count = document.getElementById("csCount").value;
+
+  fetch("/api/cs-fundamentals/start", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ subject, difficulty, count })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.questions || data.questions.length === 0) {
+      alert("No questions found for the selected criteria.");
+      return;
+    }
+
+    csQuestions = data.questions;
+    csUserAnswers = {};
+    csCurrentIndex = 0;
+
+    document.getElementById("activeSubjectBadge").innerText = subject;
+    document.getElementById("activeCSDifficulty").innerText = `Difficulty: ${difficulty}`;
+
+    document.getElementById("csConfigSection").classList.add("d-none");
+    document.getElementById("csResultSection").classList.add("d-none");
+    document.getElementById("csActiveSection").classList.remove("d-none");
+
+    renderCSQuestion();
+  })
+  .catch(err => {
+    console.error("Error starting CS MCQ test:", err);
+    alert("Failed to start quiz.");
+  });
+}
+
+function renderCSQuestion() {
+  const q = csQuestions[csCurrentIndex];
+  document.getElementById("csQuestionCounter").innerText = `Question ${csCurrentIndex + 1} of ${csQuestions.length}`;
+  document.getElementById("csTopicBadge").innerText = `Topic: ${q.topic}`;
+  document.getElementById("csQuestionText").innerText = q.question;
+
+  const pct = ((csCurrentIndex + 1) / csQuestions.length) * 100;
+  document.getElementById("csProgressBar").style.width = `${pct}%`;
+
+  const container = document.getElementById("csOptionsContainer");
+  container.innerHTML = "";
+
+  q.options.forEach((optText, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "btn btn-outline-secondary text-start p-3 fw-semibold option-btn rounded-3 border-2";
+    if (csUserAnswers[q.id] === idx) {
+      btn.className = "btn btn-teal text-white text-start p-3 fw-semibold option-btn rounded-3 border-2";
+      btn.style.backgroundColor = "#0d9488";
+    }
+    btn.innerText = `${String.fromCharCode(65 + idx)}. ${optText}`;
+    btn.onclick = () => selectCSOption(q.id, idx);
+    container.appendChild(btn);
+  });
+
+  document.getElementById("csPrevBtn").disabled = (csCurrentIndex === 0);
+  if (csCurrentIndex === csQuestions.length - 1) {
+    document.getElementById("csNextBtn").innerText = "Submit Quiz";
+    document.getElementById("csNextBtn").onclick = confirmSubmitCS;
+  } else {
+    document.getElementById("csNextBtn").innerText = "Next";
+    document.getElementById("csNextBtn").onclick = csNextQuestion;
+  }
+}
+
+function selectCSOption(qId, optIdx) {
+  csUserAnswers[qId] = optIdx;
+  renderCSQuestion();
+}
+
+function csPrevQuestion() {
+  if (csCurrentIndex > 0) {
+    csCurrentIndex--;
+    renderCSQuestion();
+  }
+}
+
+function csNextQuestion() {
+  if (csCurrentIndex < csQuestions.length - 1) {
+    csCurrentIndex++;
+    renderCSQuestion();
+  }
+}
+
+function confirmSubmitCS() {
+  if (confirm("Are you sure you want to submit your CS Technical MCQ quiz?")) {
+    submitCSQuiz();
+  }
+}
+
+function submitCSQuiz() {
+  fetch("/api/cs-fundamentals/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      subject: selectedSubjectName,
+      answers: csUserAnswers
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("csActiveSection").classList.add("d-none");
+    document.getElementById("csResultSection").classList.remove("d-none");
+
+    document.getElementById("csResScore").innerText = `${data.score} / ${data.total_questions}`;
+    document.getElementById("csResAccuracy").innerText = `${data.accuracy}%`;
+    document.getElementById("csResCorrect").innerText = data.score;
+    document.getElementById("csResWrong").innerText = data.wrong_count;
+
+    // Strong Topics
+    const strongBox = document.getElementById("csStrongContainer");
+    strongBox.innerHTML = "";
+    if (data.strong_topics && data.strong_topics.length > 0) {
+      data.strong_topics.forEach(st => {
+        strongBox.innerHTML += `<span class="badge bg-success fs-6 px-3 py-2">${st}</span>`;
+      });
+    } else {
+      strongBox.innerHTML = `<span class="text-muted small">None identified in this session</span>`;
+    }
+
+    // Weak Topics
+    const weakBox = document.getElementById("csWeakContainer");
+    weakBox.innerHTML = "";
+    if (data.weak_topics && data.weak_topics.length > 0) {
+      data.weak_topics.forEach(wt => {
+        weakBox.innerHTML += `<span class="badge bg-warning text-dark fs-6 px-3 py-2">${wt}</span>`;
+      });
+    } else {
+      weakBox.innerHTML = `<span class="text-success small"><i class="fa-solid fa-check me-1"></i>Great job! All topics mastered.</span>`;
+    }
+
+    // Question Review
+    const reviewBox = document.getElementById("csReviewAccordion");
+    reviewBox.innerHTML = "";
+    data.review.forEach((item, index) => {
+      const isCorrect = item.is_correct;
+      const statusIcon = isCorrect ? '<i class="fa-solid fa-circle-check text-success"></i>' : '<i class="fa-solid fa-circle-xmark text-danger"></i>';
+      
+      let userAnsText = "Not Answered";
+      if (item.user_answer !== undefined && item.user_answer !== null && item.options[item.user_answer]) {
+        userAnsText = item.options[item.user_answer];
+      }
+      const correctAnsText = item.options[item.correct_answer];
+
+      reviewBox.innerHTML += `
+        <div class="card border p-3 rounded-3 mb-2">
+          <div class="d-flex align-items-start justify-content-between mb-2">
+            <h6 class="fw-bold mb-0">${statusIcon} Q${index + 1}: ${item.question}</h6>
+            <span class="badge bg-light text-dark border small">${item.topic}</span>
+          </div>
+          <div class="small mb-2">
+            <span class="text-muted">Your Choice:</span> <strong class="${isCorrect ? 'text-success' : 'text-danger'}">${userAnsText}</strong> | 
+            <span class="text-muted">Correct Choice:</span> <strong class="text-success">${correctAnsText}</strong>
+          </div>
+          <div class="p-2 bg-light rounded text-secondary small border-start border-3 border-teal" style="border-color: #0d9488 !important;">
+            <strong>Explanation:</strong> ${item.explanation}
+          </div>
+        </div>
+      `;
+    });
+  })
+  .catch(err => {
+    console.error("Error submitting CS MCQ:", err);
+    alert("Failed to submit quiz.");
+  });
+}
+
+function resetCSConfig() {
+  document.getElementById("csResultSection").classList.add("d-none");
+  document.getElementById("csConfigSection").classList.remove("d-none");
+}
+</script>
+{% endblock %}

@@ -51,7 +51,7 @@ ai-career-copilot/
    python app.py
    ```
 
-4. Open **http://127.0.0.1:5000** in your browser.
+4. Open **http://127.0.0.1:10000** in your browser.
 
 > **Note:** If you had an older version with `database.db`, delete it and restart so the new `users` and `chat_history` tables are created correctly.
 
@@ -110,7 +110,7 @@ cd ai-career-copilot
 python app.py
 ```
 
-Open http://127.0.0.1:5000 in your browser.
+Open http://127.0.0.1:10000 in your browser.
 
 ### Step 2: Sign up as a new student
 
@@ -149,7 +149,7 @@ Open http://127.0.0.1:5000 in your browser.
 
 ### Step 6: Log in as the approved student
 
-1. Click **Logout** in the sidebar (or open http://127.0.0.1:5000 in a new incognito/private window).
+1. Click **Logout** in the sidebar (or open http://127.0.0.1:10000 in a new incognito/private window).
 2. Sign in with:
    - **Email:** student@test.com
    - **Password:** test123

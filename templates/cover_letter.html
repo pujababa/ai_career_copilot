@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cards-grid">
+  <article class="card wide">
+    <div class="card-header">
+      <h2><i class="fa-solid fa-envelope-open-text" style="color: var(--accent); margin-right: 8px;"></i> Professional Cover Letter Generator</h2>
+      <span class="badge badge-soft">AI Generator</span>
+    </div>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">
+      Generate tailored, persuasive cover letters customized to specific job titles and company names using Generative AI.
+    </p>
+
+    <form method="POST" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+      <div class="form-group">
+        <label>Company Name</label>
+        <input type="text" name="company_name" placeholder="e.g. Stripe, Google, Microsoft" required value="{{ request.form.get('company_name', '') }}">
+      </div>
+      <div class="form-group">
+        <label>Job Title</label>
+        <input type="text" name="job_title" placeholder="e.g. Software Engineer" required value="{{ request.form.get('job_title', '') }}">
+      </div>
+      <div class="form-group">
+        <label>Key Achievements / Skills to Highlight</label>
+        <input type="text" name="key_skills" placeholder="e.g. Python, Microservices, React" value="{{ request.form.get('key_skills', '') }}">
+      </div>
+      <div style="grid-column: 1 / -1;">
+        <button type="submit" class="btn btn-primary" style="padding: 12px 28px;">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Draft Cover Letter
+        </button>
+      </div>
+    </form>
+  </article>
+
+  {% if letter %}
+  <article class="card wide">
+    <div class="card-header">
+      <h2><i class="fa-solid fa-file-lines" style="color: #22c55e; margin-right: 8px;"></i> Drafted Cover Letter</h2>
+      <button onclick="navigator.clipboard.writeText(document.getElementById('letterContent').innerText); alert('Copied to clipboard!');" class="btn btn-secondary"><i class="fa-solid fa-copy"></i> Copy Text</button>
+    </div>
+
+    <div id="letterContent" style="background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border-subtle); padding: 24px; border-radius: 12px; font-family: monospace; font-size: 0.95rem; line-height: 1.6; color: var(--text-main); white-space: pre-wrap;">{{ letter }}</div>
+  </article>
+  {% endif %}
+</div>
+{% endblock %}

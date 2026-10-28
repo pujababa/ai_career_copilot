@@ -1,88 +1,288 @@
 {% extends "base.html" %}
+
 {% block content %}
-<header class="topbar">
-  <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">☰</button>
-  <div class="topbar-left">
-    <h1 class="page-title">Resume Analyzer</h1>
-    <p class="page-subtitle">Upload your resume to get instant feedback and improvements.</p>
-  </div>
-  <div class="topbar-right">
-    <div class="user-pill">
-      <div class="avatar">{{ current_user.initials if current_user else 'U' }}</div>
-      <div class="user-pill-meta">
-        <span class="user-name">{{ current_user.name if current_user else 'User' }}</span>
-        <span class="user-role">{{ current_user.role|title }}</span>
+<section class="card-grid" style="grid-template-columns: 1fr; max-width: 1100px; margin: 0 auto; gap: 2rem;">
+  <!-- 1. RESUME UPLOAD & JOB DESCRIPTION CARD -->
+  <article class="card wide">
+    <div class="card-header" style="border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-strong); display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-file-shield" style="color: var(--accent-primary);"></i>
+            Evidence-Based ATS Resume Checker
+          </h2>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.4rem;">
+            Transparent, explainable resume audit inspired by modern ATS evaluators. Provides two independent scores: Resume Quality &amp; Target Job Match.
+          </p>
+        </div>
+        <span class="badge badge-soft" style="font-size: 0.8rem; padding: 6px 12px;">
+          <i class="fa-solid fa-scale-balanced" style="color: var(--accent-primary); margin-right: 5px;"></i>
+          Dual-Score Engine
+        </span>
       </div>
     </div>
-  </div>
-</header>
 
-<section class="cards-grid">
-  <article class="card">
-    <div class="card-header">
-      <h2>Upload Resume</h2>
-      <span class="badge badge-soft">PDF or DOCX</span>
-    </div>
-    
-    <div id="statusMessage" style="display: none; padding: 1rem; border-radius: 6px; margin-top: 1rem; font-weight: 500;"></div>
+    <form id="resumeForm" style="margin-top: 1.5rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+        <!-- File Upload Box -->
+        <div>
+          <label style="display: block; font-weight: 600; color: var(--text-strong); margin-bottom: 0.5rem; font-size: 0.9rem;">
+            Upload Resume (PDF or DOCX) <span style="color: #ef4444;">*</span>
+          </label>
+          <div style="border: 2px dashed var(--border-light); border-radius: 12px; padding: 2rem 1rem; text-align: center; background: rgba(255, 255, 255, 0.01); transition: all 0.2s ease; position: relative;">
+            <input type="file" id="resumeFile" name="resume" accept=".pdf,.docx" required style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;" />
+            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.2rem; color: var(--accent-primary); margin-bottom: 0.75rem;"></i>
+            <p id="fileNameDisplay" style="font-size: 0.95rem; color: var(--text-strong); font-weight: 600; margin: 0;">
+              Drag &amp; drop or click to upload
+            </p>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem;">
+              Text-based PDF or DOCX up to 5MB
+            </p>
+          </div>
+        </div>
 
-    <form id="resumeForm" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1rem;">
-      <div style="border: 2px dashed #ccc; padding: 2rem; border-radius: 8px; text-align: center; background: #fafafa;">
-        <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem; color: #666; margin-bottom: 1rem;"></i>
-        <label for="resumeFile" style="display: block; font-weight: 500; cursor: pointer; color: #4f46e5; text-decoration: underline;">
-          Choose a file to upload
-        </label>
-        <input type="file" id="resumeFile" accept=".pdf, .docx" required style="display: none;">
-        <p id="fileNameDisplay" style="margin-top: 0.5rem; font-size: 0.875rem; color: #666;">No file selected</p>
+        <!-- Optional Job Description -->
+        <div>
+          <label for="jobDescription" style="display: block; font-weight: 600; color: var(--text-strong); margin-bottom: 0.5rem; font-size: 0.9rem;">
+            Target Job Description <span style="color: var(--text-muted); font-weight: 400;">(Required for Job Match Score)</span>
+          </label>
+          <textarea id="jobDescription" name="job_description" rows="5" placeholder="Paste the complete job posting including required skills, qualifications, and role responsibilities for weighted matching..." style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-light); background: rgba(0,0,0,0.2); color: var(--text-strong); font-size: 0.85rem; line-height: 1.4; resize: vertical; box-sizing: border-box;"></textarea>
+          <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px;">
+            <i class="fa-solid fa-circle-info" style="margin-right: 4px;"></i> If omitted, Resume Quality will be evaluated independently.
+          </span>
+        </div>
       </div>
-      
-      <button type="submit" class="btn btn-primary" id="analyzeBtn" style="align-self: center; padding: 0.75rem 2rem;">
-        Analyze Resume
-      </button>
+
+      <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem; align-items: center;">
+        <span id="statusMessage" style="display: none; font-size: 0.85rem; padding: 6px 14px; border-radius: 6px;"></span>
+        <button type="submit" id="analyzeBtn" class="btn btn-primary" style="padding: 0.75rem 2rem; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-magnifying-glass-chart"></i> Run Evidence-Based Audit
+        </button>
+      </div>
     </form>
-    
-    <div id="loading" style="display: none; text-align: center; margin-top: 1.5rem;">
-      <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 1.5rem; color: #4f46e5;"></i>
-      <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #555;">Analyzing document...</p>
+
+    <!-- Loading State -->
+    <div id="loading" style="display: none; text-align: center; padding: 3rem 1rem;">
+      <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2.5rem; color: var(--accent-primary);"></i>
+      <p style="margin-top: 1rem; font-size: 1rem; color: var(--text-strong); font-weight: 600;">
+        Parsing document sections and evaluating evidence...
+      </p>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;">
+        Auditing contact integrity, section structure, action verbs, metrics, and skill substantiation.
+      </p>
     </div>
   </article>
 
-  <article class="card" id="results-card" style="display: none;">
-    <div class="card-header">
-      <h2>Analysis Results</h2>
+  <!-- 2. COMPREHENSIVE ANALYSIS RESULTS CARD -->
+  <article class="card wide" id="results-card" style="display: none;">
+    <!-- Disclaimer Banner -->
+    <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 8px; padding: 0.85rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 10px;">
+      <i class="fa-solid fa-shield-halved" style="color: #818cf8; font-size: 1.1rem; margin-top: 2px;"></i>
+      <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+        <strong style="color: var(--text-strong);">Diagnostic System Notice:</strong>
+        <span id="disclaimerNotice">This analysis provides transparent diagnostic feedback on resume structure, evidence completeness, and keyword relevance. It is NOT an official employer ATS algorithm score and does not guarantee interviews or employment.</span>
+      </div>
     </div>
-    
-    <div style="display: flex; align-items: center; gap: 2rem; margin-top: 1rem;">
-      <!-- Score Circle -->
-      <div style="position: relative; width: 120px; height: 120px;">
-        <svg viewBox="0 0 120 120" style="transform: rotate(-90deg);">
-          <circle cx="60" cy="60" r="52" fill="none" stroke="#eee" stroke-width="10" />
-          <circle id="scoreCircle" cx="60" cy="60" r="52" fill="none" stroke="#4f46e5" stroke-width="10" stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="327" style="transition: stroke-dashoffset 1s ease-out;" />
-        </svg>
-        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-          <span id="scoreText" style="font-size: 1.75rem; font-weight: 700; color: #1a1a1a;">0</span>
-          <span style="font-size: 0.75rem; color: #666; text-transform: uppercase; font-weight: 500;">Score</span>
-        </div>
-      </div>
+
+    <!-- DUAL SCORES ROW -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-light);">
       
-      <!-- Suggestions -->
-      <div style="flex: 1; display: flex; flex-direction: column; gap: 1.5rem;">
-        <div>
-          <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; color: #1a1a1a;">Missing Sections</h3>
-          <ul id="missingSectionsList" style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.5rem;">
-            <!-- Items injected via JS -->
-          </ul>
+      <!-- Score Box A: Job Match Score -->
+      <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-light); border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <div>
+            <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-strong); margin: 0; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-bullseye" style="color: #6366f1;"></i> Job Match Score
+            </h3>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Matches resume against target JD requirements</span>
+          </div>
+          <span id="jdMatchScoreBadge" class="badge pill-good">0/100</span>
         </div>
-        <div>
-          <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; color: #1a1a1a;">Suggestions for Improvement</h3>
-          <ul id="suggestionsList" style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
-            <!-- Items injected via JS -->
-          </ul>
+
+        <div style="display: flex; align-items: center; gap: 1.5rem; margin: 0.5rem 0;">
+          <!-- Circular Dial for Job Match -->
+          <div style="position: relative; width: 100px; height: 100px; flex-shrink: 0;">
+            <svg viewBox="0 0 120 120" style="transform: rotate(-90deg); width: 100%; height: 100%;">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10" />
+              <circle id="jobMatchCircle" cx="60" cy="60" r="52" fill="none" stroke="#6366f1" stroke-width="10" stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="327" style="transition: stroke-dashoffset 1s ease-out, stroke 0.5s ease;" />
+            </svg>
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <span id="jobMatchScoreText" style="font-size: 1.6rem; font-weight: 800; color: var(--text-strong); line-height: 1;">--</span>
+              <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 3px;">Match</span>
+            </div>
+          </div>
+
+          <div style="flex: 1;">
+            <h4 id="jobMatchRatingTitle" style="font-size: 1.05rem; font-weight: 700; color: var(--text-strong); margin: 0 0 4px 0;">--</h4>
+            <p id="jobMatchExplanation" style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin: 0;">
+              Paste a Job Description above to evaluate required technical skills, role alignment, and eligibility.
+            </p>
+          </div>
+        </div>
+
+        <div id="jobMatchSubmetrics" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px dashed var(--border-light); font-size: 0.78rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+          <span>Coverage: <strong id="jdCoverageText" style="color: var(--text-strong);">--</strong></span>
+          <span>Role Fit: <strong id="jdRoleFitText" style="color: var(--text-strong);">--</strong></span>
+          <span>Required Match: <strong id="jdReqSkillsText" style="color: var(--text-strong);">--</strong></span>
         </div>
       </div>
+
+      <!-- Score Box B: Resume Quality Score -->
+      <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-light); border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <div>
+            <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-strong); margin: 0; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-gem" style="color: #10b981;"></i> Resume Quality Score
+            </h3>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Completeness, structure, verbs &amp; metrics</span>
+          </div>
+          <span id="scoreRatingBadge" class="badge pill-good">0/100</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 1.5rem; margin: 0.5rem 0;">
+          <!-- Circular Dial for Quality -->
+          <div style="position: relative; width: 100px; height: 100px; flex-shrink: 0;">
+            <svg viewBox="0 0 120 120" style="transform: rotate(-90deg); width: 100%; height: 100%;">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10" />
+              <circle id="scoreCircle" cx="60" cy="60" r="52" fill="none" stroke="#22c55e" stroke-width="10" stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="327" style="transition: stroke-dashoffset 1s ease-out, stroke 0.5s ease;" />
+            </svg>
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <span id="scoreText" style="font-size: 1.6rem; font-weight: 800; color: var(--text-strong); line-height: 1;">0</span>
+              <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-top: 3px;">Quality</span>
+            </div>
+          </div>
+
+          <div style="flex: 1;">
+            <h4 id="scoreRatingText" style="font-size: 1.05rem; font-weight: 700; color: var(--text-strong); margin: 0 0 4px 0;">--</h4>
+            <p id="analysisSummary" style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin: 0;">
+              Independent evaluation of headings, measurable metrics, and evidence depth.
+            </p>
+          </div>
+        </div>
+
+        <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px dashed var(--border-light); font-size: 0.78rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+          <span><strong id="metaWordCount" style="color: var(--text-strong);">0</strong> Words</span>
+          <span><strong id="metaSkillCount" style="color: var(--text-strong);">0</strong> Skills</span>
+          <span><strong id="metaVerbCount" style="color: var(--text-strong);">0</strong> Action Verbs</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Breakdown Bars -->
+    <div style="margin-top: 1.5rem;">
+      <h3 style="font-size: 1rem; font-weight: 600; color: var(--text-strong); margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+        <span><i class="fa-solid fa-chart-simple" style="color: var(--accent-primary); margin-right: 6px;"></i> Weighted Scoring Pillars</span>
+        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;">Deterministic 100-Point Formula</span>
+      </h3>
+      <div id="categoryBarsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.85rem;">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+
+    <!-- Contact & Section Structure Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+      <!-- Contact Info Audit -->
+      <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-light); border-radius: 10px; padding: 1.25rem;">
+        <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text-strong); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-address-card" style="color: var(--accent-primary);"></i> Contact &amp; Professional Links
+        </h4>
+        <div id="contactInfoGrid" style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.85rem;">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <!-- Sections Detected -->
+      <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-light); border-radius: 10px; padding: 1.25rem;">
+        <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text-strong); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-list-check" style="color: var(--accent-primary);"></i> Standard Resume Headings
+        </h4>
+        <div id="sectionsStatusGrid" style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.85rem;">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TARGET JOB DESCRIPTION REQUIREMENTS BREAKDOWN -->
+    <div id="jobMatchPanel" style="margin-top: 1.5rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-light); border-radius: 10px; padding: 1.25rem;">
+      <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text-strong); margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+        <span><i class="fa-solid fa-crosshairs" style="color: var(--accent-primary); margin-right: 6px;"></i> Job Description Requirements Classification</span>
+        <span id="jdMatchRateBadge" class="badge pill-good">0% Match</span>
+      </h4>
+      <div id="jobMatchDetails">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+
+    <!-- TECHNICAL SKILLS & SUBSTANTIATION -->
+    <div style="margin-top: 1.5rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-light); border-radius: 10px; padding: 1.25rem;">
+      <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text-strong); margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+        <span><i class="fa-solid fa-code" style="color: var(--accent-primary); margin-right: 6px;"></i> Technical Skills &amp; Evidence Substantiation</span>
+        <span id="skillsBadgeCount" class="badge badge-soft" style="font-size: 0.75rem;">0 Skills Detected</span>
+      </h4>
+      <div id="skillsPillsList" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+
+    <!-- EVIDENCE-BASED RECOMMENDATIONS & REWRITES -->
+    <div style="margin-top: 1.5rem;">
+      <h3 style="font-size: 1rem; font-weight: 600; color: var(--text-strong); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-primary);"></i>
+        Evidence-Based Recommendations &amp; Grounded Rewrites
+      </h3>
+      <div id="evidenceRecsContainer" style="display: flex; flex-direction: column; gap: 1rem;">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+
+    <!-- CRITICAL ISSUES & ATS WARNINGS -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+      <!-- Issues Found -->
+      <div style="background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 1.25rem;">
+        <h4 style="font-size: 0.95rem; font-weight: 600; color: #ef4444; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-triangle-exclamation"></i> Issues &amp; Deficiencies Found
+        </h4>
+        <ul id="problemsList" style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.85rem; color: var(--text-muted);">
+          <!-- Injected via JS -->
+        </ul>
+      </div>
+
+      <!-- Action Items -->
+      <div style="background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 1.25rem;">
+        <h4 style="font-size: 0.95rem; font-weight: 600; color: #10b981; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-circle-check"></i> Standard Action Checklist
+        </h4>
+        <ul id="recommendationsList" style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.85rem; color: var(--text-muted);">
+          <!-- Injected via JS -->
+        </ul>
+      </div>
+    </div>
+
+    <!-- Hidden compatibility elements for automated tests -->
+    <ul id="missingSectionsList" style="display: none;"></ul>
+    <ul id="suggestionsList" style="display: none;"></ul>
+    <div id="readabilityFindingsList" style="display: none;"></div>
+
+    <!-- Audit Limitations Disclaimer -->
+    <div style="margin-top: 1.5rem; padding: 1rem; border-radius: 8px; background: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border-light); font-size: 0.75rem; color: var(--text-muted); line-height: 1.5;">
+      <strong><i class="fa-solid fa-circle-info" style="margin-right: 4px;"></i> Parsing &amp; Layout Boundary:</strong>
+      <span id="limitationsText">
+        This ATS audit evaluates extracted document text, section patterns, and keyword taxonomy. It does not visually parse multi-column PDF layouts, tables, or graphical font elements.
+      </span>
     </div>
   </article>
 </section>
+
+<style>
+  .pill-good { background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+  .pill-warn { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+  .pill-bad  { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+  .pill-soft { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); border: 1px solid var(--border-light); padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; }
+  .skill-pill { background: rgba(79, 70, 229, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; display: inline-flex; align-items: center; }
+  .badge-prio-high { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; }
+  .badge-prio-med  { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; }
+  .badge-prio-low  { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; }
+</style>
 
 <script>
   const fileInput = document.getElementById('resumeFile');
@@ -93,14 +293,17 @@
   const resultsCard = document.getElementById('results-card');
   const scoreCircle = document.getElementById('scoreCircle');
   const scoreText = document.getElementById('scoreText');
-  const suggestionsList = document.getElementById('suggestionsList');
+  const jobMatchCircle = document.getElementById('jobMatchCircle');
+  const jobMatchScoreText = document.getElementById('jobMatchScoreText');
   const statusMessage = document.getElementById('statusMessage');
 
   fileInput.addEventListener('change', (e) => {
     if (e.target.files.length > 0) {
-      fileNameDisplay.textContent = e.target.files[0].name;
+      const file = e.target.files[0];
+      const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+      fileNameDisplay.textContent = `${file.name} (${sizeMb} MB)`;
     } else {
-      fileNameDisplay.textContent = 'No file selected';
+      fileNameDisplay.textContent = 'No file selected (Max 5MB)';
     }
   });
 
@@ -115,6 +318,10 @@
 
     const formData = new FormData();
     formData.append('resume', fileInput.files[0]);
+    const jdVal = document.getElementById('jobDescription').value.trim();
+    if (jdVal) {
+      formData.append('job_description', jdVal);
+    }
 
     try {
       const response = await fetch('/resume-analysis', {
@@ -123,68 +330,330 @@
       });
       
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Upload failed');
-      
-      // Update Score
-      const score = data.score;
-      scoreText.textContent = score;
-      
-      // Calculate dashoffset (circumference is ~327 for r=52)
-      const circumference = 327;
-      const offset = circumference - (score / 100) * circumference;
-      
-      // Setup dynamic coloring
-      if (score >= 80) {
-        scoreCircle.style.stroke = '#22c55e'; // Green
-      } else if (score >= 50) {
-        scoreCircle.style.stroke = '#f59e0b'; // Yellow
-      } else {
-        scoreCircle.style.stroke = '#ef4444'; // Red
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Upload and analysis failed');
       }
       
-      // Force reflow before animating
-      scoreCircle.style.strokeDashoffset = offset;
-      
-      // Update Missing Sections
-      const missingSectionsList = document.getElementById('missingSectionsList');
-      missingSectionsList.innerHTML = '';
-      if (data.missing_sections && data.missing_sections.length === 0) {
-        missingSectionsList.innerHTML = '<li style="background: #dcfce7; color: #166534; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500;">None Detected</li>';
-      } else if (data.missing_sections) {
-        data.missing_sections.forEach(section => {
-          missingSectionsList.innerHTML += `<li style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 500;">${section}</li>`;
-        });
-      }
+      renderReport(data);
 
-      // Update Suggestions
-      suggestionsList.innerHTML = '';
-      if (data.suggestions.length === 0) {
-        suggestionsList.innerHTML = '<li style="color: #22c55e;"><i class="fa-solid fa-check-circle" style="margin-right: 8px;"></i>Your resume looks solid! No major suggestions.</li>';
-      } else {
-        data.suggestions.forEach(sugg => {
-          suggestionsList.innerHTML += `<li style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.95rem; color: #444;"><i class="fa-solid fa-circle-exclamation" style="color: #f59e0b; margin-top: 4px;"></i><span>${sugg}</span></li>`;
-        });
-      }
-      
-      resultsCard.style.display = 'block';
-      
-      // Show success message
-      statusMessage.textContent = data.message || "File uploaded successfully!";
-      statusMessage.style.backgroundColor = "#dcfce7";
-      statusMessage.style.color = "#166534";
-      statusMessage.style.border = "1px solid #bbf7d0";
+      statusMessage.textContent = data.message || "Resume analyzed successfully!";
+      statusMessage.style.backgroundColor = "rgba(34, 197, 94, 0.1)";
+      statusMessage.style.color = "#22c55e";
+      statusMessage.style.border = "1px solid rgba(34, 197, 94, 0.3)";
       statusMessage.style.display = "block";
     } catch (error) {
       console.error(error);
-      statusMessage.textContent = 'Error: ' + error.message;
-      statusMessage.style.backgroundColor = "#fee2e2";
-      statusMessage.style.color = "#991b1b";
-      statusMessage.style.border = "1px solid #fecaca";
+      statusMessage.textContent = error.message;
+      statusMessage.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+      statusMessage.style.color = "#ef4444";
+      statusMessage.style.border = "1px solid rgba(239, 68, 68, 0.3)";
       statusMessage.style.display = "block";
     } finally {
       analyzeBtn.disabled = false;
       loading.style.display = 'none';
     }
   });
+
+  function renderReport(data) {
+    const circum = 327;
+
+    // 1. RESUME QUALITY SCORE (Dial B)
+    const qualityScore = data.quality_score !== undefined ? data.quality_score : (data.score || 0);
+    scoreText.textContent = qualityScore;
+    const qOffset = circum - (qualityScore / 100) * circum;
+    if (qualityScore >= 80) {
+      scoreCircle.style.stroke = '#22c55e';
+    } else if (qualityScore >= 60) {
+      scoreCircle.style.stroke = '#f59e0b';
+    } else {
+      scoreCircle.style.stroke = '#ef4444';
+    }
+    scoreCircle.style.strokeDashoffset = qOffset;
+
+    document.getElementById('scoreRatingBadge').textContent = `${qualityScore}/100`;
+    document.getElementById('scoreRatingBadge').className = `badge ${data.quality_badge || 'pill-good'}`;
+    document.getElementById('scoreRatingText').textContent = data.quality_rating || 'Resume Quality Evaluated';
+    document.getElementById('analysisSummary').textContent = data.summary || '';
+
+    // 2. JOB MATCH SCORE (Dial A)
+    const jm = data.job_match || {};
+    const hasMeaningfulJd = jm.has_meaningful_jd && jm.job_match_score !== null && jm.job_match_score !== undefined;
+    
+    if (hasMeaningfulJd) {
+      const matchScore = jm.job_match_score;
+      jobMatchScoreText.textContent = matchScore;
+      const jmOffset = circum - (matchScore / 100) * circum;
+      if (matchScore >= 80) {
+        jobMatchCircle.style.stroke = '#22c55e';
+      } else if (matchScore >= 60) {
+        jobMatchCircle.style.stroke = '#f59e0b';
+      } else {
+        jobMatchCircle.style.stroke = '#ef4444';
+      }
+      jobMatchCircle.style.strokeDashoffset = jmOffset;
+
+      document.getElementById('jdMatchScoreBadge').textContent = `${matchScore}/100`;
+      document.getElementById('jdMatchScoreBadge').className = `badge ${jm.job_match_badge || 'pill-good'}`;
+      document.getElementById('jobMatchRatingTitle').textContent = jm.job_match_rating || 'Target Job Match';
+      document.getElementById('jobMatchExplanation').textContent = jm.note || 'Evaluated against required and preferred skills in the job description.';
+
+      document.getElementById('jdCoverageText').textContent = `${jm.match_rate || 0}%`;
+      document.getElementById('jdRoleFitText').textContent = `${jm.role_alignment_score || 0}/15 pts`;
+      const reqMatched = (jm.required_skills && jm.required_skills.matched_with_evidence) ? jm.required_skills.matched_with_evidence.length : 0;
+      const reqTotal = (jm.required_skills && jm.required_skills.total) ? jm.required_skills.total : 0;
+      document.getElementById('jdReqSkillsText').textContent = `${reqMatched}/${reqTotal} Evidenced`;
+    } else {
+      jobMatchScoreText.textContent = '--';
+      jobMatchCircle.style.stroke = 'rgba(255,255,255,0.1)';
+      jobMatchCircle.style.strokeDashoffset = circum;
+
+      document.getElementById('jdMatchScoreBadge').textContent = 'Unavailable';
+      document.getElementById('jdMatchScoreBadge').className = 'badge pill-soft';
+      document.getElementById('jobMatchRatingTitle').textContent = 'No Target Job Description';
+      document.getElementById('jobMatchExplanation').textContent = 'Job Match Score requires a target job posting. Paste requirements above to see weighted matching.';
+
+      document.getElementById('jdCoverageText').textContent = 'N/A';
+      document.getElementById('jdRoleFitText').textContent = 'N/A';
+      document.getElementById('jdReqSkillsText').textContent = 'N/A';
+    }
+
+    // 3. Metadata counts
+    if (data.formatting_audit) {
+      document.getElementById('metaWordCount').textContent = data.formatting_audit.word_count || 0;
+      document.getElementById('metaVerbCount').textContent = data.formatting_audit.action_verb_count || 0;
+    }
+    if (data.skills_analysis) {
+      document.getElementById('metaSkillCount').textContent = data.skills_analysis.skill_count || 0;
+      document.getElementById('skillsBadgeCount').textContent = `${data.skills_analysis.skill_count || 0} Skills Detected (${Math.round((data.skills_analysis.substantiation_ratio || 0)*100)}% Evidenced in Projects)`;
+    }
+
+    // 4. Category Breakdown Bars
+    const catGrid = document.getElementById('categoryBarsGrid');
+    catGrid.innerHTML = '';
+    const breakdown = data.quality_breakdown || data.category_scores || {};
+    for (const [key, cat] of Object.entries(breakdown)) {
+      const pct = Math.round((cat.score / cat.max) * 100);
+      let barColor = '#22c55e';
+      if (pct < 50) barColor = '#ef4444';
+      else if (pct < 75) barColor = '#f59e0b';
+
+      catGrid.innerHTML += `
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); border-radius: 8px; padding: 0.75rem;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.4rem;">
+            <span style="font-weight: 600; color: var(--text-strong);">${cat.name}</span>
+            <span style="color: var(--text-muted);">${cat.score}/${cat.max} (${pct}%)</span>
+          </div>
+          <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden;">
+            <div style="width: ${pct}%; height: 100%; background: ${barColor}; border-radius: 3px; transition: width 0.8s ease;"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 5. Contact Info Grid
+    const contactGrid = document.getElementById('contactInfoGrid');
+    contactGrid.innerHTML = '';
+    if (data.contact_info) {
+      const labels = {
+        name: { label: 'Candidate Name', icon: 'fa-user' },
+        email: { label: 'Email Address', icon: 'fa-envelope' },
+        phone: { label: 'Phone Number', icon: 'fa-phone' },
+        linkedin: { label: 'LinkedIn Profile', icon: 'fa-brands fa-linkedin' },
+        github: { label: 'GitHub Profile', icon: 'fa-brands fa-github' },
+        portfolio: { label: 'Portfolio Link', icon: 'fa-globe' }
+      };
+      for (const [key, meta] of Object.entries(data.contact_info)) {
+        const info = labels[key] || { label: key, icon: 'fa-circle' };
+        const badgeClass = meta.present ? 'pill-good' : 'pill-soft';
+        contactGrid.innerHTML += `
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;">
+            <span style="color: var(--text-muted);"><i class="${info.icon}" style="width: 16px; margin-right: 6px; color: var(--accent-primary);"></i>${info.label}:</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="color: var(--text-strong); font-weight: 500;">${meta.value || 'Not detected'}</span>
+              <span class="${badgeClass}">${meta.status || (meta.present ? 'Present' : 'Missing')}</span>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // 6. Section Status Grid
+    const secGrid = document.getElementById('sectionsStatusGrid');
+    secGrid.innerHTML = '';
+    if (data.sections) {
+      data.sections.forEach(s => {
+        const badgeClass = s.present ? 'pill-good' : 'pill-soft';
+        secGrid.innerHTML += `
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;">
+            <span style="color: var(--text-strong);">${s.name}</span>
+            <span class="${badgeClass}">${s.present ? 'Present' : 'Missing'}</span>
+          </div>
+        `;
+      });
+    }
+
+    // 7. Job Match Requirements Breakdown
+    const jdDetails = document.getElementById('jobMatchDetails');
+    const jdBadge = document.getElementById('jdMatchRateBadge');
+    if (data.job_match && data.job_match.has_jd) {
+      if (data.job_match.keywords_found) {
+        jdBadge.textContent = `${data.job_match.match_rate}% Coverage`;
+        jdBadge.className = data.job_match.match_rate >= 70 ? 'badge pill-good' : (data.job_match.match_rate >= 40 ? 'badge pill-warn' : 'badge pill-bad');
+
+        const reqEvidenced = (data.job_match.required_skills && data.job_match.required_skills.matched_with_evidence) || [];
+        const reqListOnly = (data.job_match.required_skills && data.job_match.required_skills.matched_list_only) || [];
+        const reqMissing = (data.job_match.required_skills && data.job_match.required_skills.missing) || [];
+
+        let evidencedHtml = reqEvidenced.map(k => `<span class="pill-good" style="margin: 2px;"><i class="fa-solid fa-check-double" style="margin-right: 4px;"></i>${k} (Evidenced)</span>`).join(' ');
+        let listOnlyHtml = reqListOnly.map(k => `<span class="pill-warn" style="margin: 2px;"><i class="fa-solid fa-list" style="margin-right: 4px;"></i>${k} (List Only)</span>`).join(' ');
+        let missingHtml = reqMissing.map(k => `<span class="pill-bad" style="margin: 2px;"><i class="fa-solid fa-xmark" style="margin-right: 4px;"></i>${k} (Missing)</span>`).join(' ');
+
+        let warningsHtml = '';
+        if (data.job_match.stuffing_warnings && data.job_match.stuffing_warnings.length > 0) {
+          warningsHtml = `
+            <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; padding: 0.6rem 0.8rem; margin-top: 0.75rem; font-size: 0.8rem; color: #ef4444;">
+              <strong><i class="fa-solid fa-triangle-exclamation" style="margin-right: 4px;"></i> Anti-Stuffing Warning:</strong>
+              ${data.job_match.stuffing_warnings.join(' ')}
+            </div>
+          `;
+        }
+
+        jdDetails.innerHTML = `
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">${data.job_match.note}</p>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div>
+              <strong style="font-size: 0.8rem; color: #22c55e;">Fully Substantiated Required Skills (${reqEvidenced.length}):</strong>
+              <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">${evidencedHtml || '<span style="color: var(--text-muted); font-size: 0.8rem;">None demonstrated in projects or experience</span>'}</div>
+            </div>
+            ${reqListOnly.length > 0 ? `
+            <div>
+              <strong style="font-size: 0.8rem; color: #f59e0b;">Partially Matched (Listed without Project Context) (${reqListOnly.length}):</strong>
+              <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">${listOnlyHtml}</div>
+            </div>` : ''}
+            <div>
+              <strong style="font-size: 0.8rem; color: #ef4444;">Missing Required Skills (${reqMissing.length}):</strong>
+              <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">${missingHtml || '<span style="color: var(--text-muted); font-size: 0.8rem;">All required JD skills matched!</span>'}</div>
+            </div>
+            ${warningsHtml}
+          </div>
+        `;
+      } else {
+        jdBadge.textContent = 'No Keywords';
+        jdBadge.className = 'badge pill-soft';
+        jdDetails.innerHTML = `<p style="font-size: 0.85rem; color: var(--text-muted);">${data.job_match.note}</p>`;
+      }
+    } else {
+      jdBadge.textContent = 'Not Provided';
+      jdBadge.className = 'badge pill-soft';
+      jdDetails.innerHTML = `
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
+          No Job Description was provided for this analysis. General resume quality was evaluated independently. To assess targeted keyword alignment, paste a Job Description above and re-analyze.
+        </p>
+      `;
+    }
+
+    // 8. Technical Skills with evidence icons
+    const skillsList = document.getElementById('skillsPillsList');
+    skillsList.innerHTML = '';
+    const allSkills = (data.skills_analysis && data.skills_analysis.detected_skills) || [];
+    const substantiatedSet = new Set((data.skills_analysis && data.skills_analysis.substantiated_skills) || []);
+
+    if (allSkills.length > 0) {
+      allSkills.forEach(skill => {
+        const isEvidenced = substantiatedSet.has(skill);
+        const icon = isEvidenced ? 'fa-check-double' : 'fa-check';
+        const style = isEvidenced ? '' : 'opacity: 0.75;';
+        skillsList.innerHTML += `
+          <span class="skill-pill" style="${style}">
+            <i class="fa-solid ${icon}" style="margin-right: 5px; font-size: 0.7rem;"></i>${skill}
+            ${isEvidenced ? '<span style="font-size: 0.65rem; margin-left: 4px; opacity: 0.8;">[Evidenced]</span>' : ''}
+          </span>
+        `;
+      });
+    } else {
+      skillsList.innerHTML = '<span style="color: var(--text-muted); font-size: 0.85rem;">No standard technical skills detected from recognized taxonomy.</span>';
+    }
+
+    // 9. Structured Evidence-Based Recommendations
+    const recsContainer = document.getElementById('evidenceRecsContainer');
+    recsContainer.innerHTML = '';
+    const structuredRecs = data.evidence_recommendations || [];
+
+    if (structuredRecs.length > 0) {
+      structuredRecs.forEach((r, idx) => {
+        const prioClass = r.priority === 'High' ? 'badge-prio-high' : (r.priority === 'Medium' ? 'badge-prio-med' : 'badge-prio-low');
+        recsContainer.innerHTML += `
+          <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-light); border-radius: 8px; padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="${prioClass}">${r.priority} Priority</span>
+                <strong style="color: var(--text-strong); font-size: 0.95rem;">${r.issue}</strong>
+              </div>
+            </div>
+
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.4rem 0;">
+              <strong>Evidence:</strong> <span style="font-family: monospace; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">${r.evidence}</span>
+            </p>
+
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.4rem 0;">
+              <strong>Why it matters:</strong> ${r.why_it_matters}
+            </p>
+
+            <p style="font-size: 0.82rem; color: var(--text-strong); margin: 0.4rem 0;">
+              <strong>Exact Action:</strong> ${r.action}
+            </p>
+
+            ${r.suggested_rewrite ? `
+            <div style="margin-top: 0.75rem; background: rgba(0, 0, 0, 0.25); border-left: 3px solid var(--accent-primary); padding: 0.6rem 0.85rem; border-radius: 0 6px 6px 0;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--accent-primary); font-weight: 600; margin-bottom: 4px;">
+                <span><i class="fa-solid fa-pen-to-square" style="margin-right: 4px;"></i> Suggested Rewrite Template</span>
+                <span style="color: var(--text-muted); font-weight: 400;">(Requires Your Verification)</span>
+              </div>
+              <div style="font-size: 0.82rem; color: var(--text-strong); white-space: pre-line; font-family: monospace;">${r.suggested_rewrite}</div>
+            </div>` : ''}
+          </div>
+        `;
+      });
+    } else {
+      recsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">No critical evidence deficiencies found.</p>';
+    }
+
+    // 10. Problems List & Checklist (for compatibility)
+    const probList = document.getElementById('problemsList');
+    probList.innerHTML = '';
+    if (data.problems && data.problems.length > 0) {
+      data.problems.forEach(p => {
+        probList.innerHTML += `
+          <li style="display: flex; align-items: flex-start; gap: 8px;">
+            <i class="fa-solid fa-circle-xmark" style="color: #ef4444; margin-top: 3px; font-size: 0.85rem;"></i>
+            <span>${p}</span>
+          </li>
+        `;
+      });
+    }
+
+    const recList = document.getElementById('recommendationsList');
+    recList.innerHTML = '';
+    const recSource = data.recommendations || data.suggestions || [];
+    if (recSource.length > 0) {
+      recSource.forEach(r => {
+        recList.innerHTML += `
+          <li style="display: flex; align-items: flex-start; gap: 8px;">
+            <i class="fa-solid fa-circle-arrow-right" style="color: #10b981; margin-top: 3px; font-size: 0.85rem;"></i>
+            <span>${r}</span>
+          </li>
+        `;
+      });
+    }
+
+    if (data.disclaimer) {
+      document.getElementById('disclaimerNotice').textContent = data.disclaimer;
+    }
+    if (data.limitations) {
+      document.getElementById('limitationsText').textContent = data.limitations;
+    }
+
+    resultsCard.style.display = 'block';
+  }
 </script>
 {% endblock %}

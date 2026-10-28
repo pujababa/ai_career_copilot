@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-3">
+  <!-- Profile & Header Banner -->
+  <div class="card text-white mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 16px;">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <h2 class="fw-bold mb-1"><i class="fa-solid fa-route me-2"></i>Personalized AI Learning Roadmap</h2>
+          <p class="mb-0 text-white-50">Customized preparation milestones tailored to your skills, target role, and study bandwidth.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge bg-light text-primary px-3 py-2 fs-6"><i class="fa-solid fa-crosshair me-1"></i>Target: {{ selected_goal or context.target_role or 'Software Developer' }}</span>
+          <span class="badge bg-white text-dark px-3 py-2 fs-6"><i class="fa-solid fa-code me-1 text-primary"></i>Skills: {{ context.skills or 'Core CS' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROADMAP GENERATION FORM CARD -->
+  <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <h4 class="fw-bold mb-2 text-dark"><i class="fa-solid fa-sliders text-primary me-2"></i>Configure Learning Goals</h4>
+      <p class="text-muted small mb-4">Generate or update your time-boxed preparation roadmap based on your daily study bandwidth and current proficiency.</p>
+
+      <form method="POST" id="roadmapForm" onsubmit="handleRoadmapSubmit()">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Target Career Goal</label>
+            <select name="career_goal" class="form-select" id="careerGoalSelect">
+              <option value="Software Developer" {% if selected_goal == 'Software Developer' %}selected{% endif %}>Software Developer</option>
+              <option value="Full-Stack Web Developer" {% if selected_goal == 'Full-Stack Web Developer' %}selected{% endif %}>Full-Stack Web Developer</option>
+              <option value="Data Scientist" {% if selected_goal == 'Data Scientist' %}selected{% endif %}>Data Scientist</option>
+              <option value="Machine Learning Engineer" {% if selected_goal == 'Machine Learning Engineer' %}selected{% endif %}>Machine Learning Engineer</option>
+              <option value="DevOps & Cloud Engineer" {% if selected_goal == 'DevOps & Cloud Engineer' %}selected{% endif %}>DevOps & Cloud Engineer</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Available Study Time</label>
+            <select name="hours_per_day" class="form-select">
+              <option value="1" {% if selected_hours == '1' %}selected{% endif %}>1 Hour / Day (Light)</option>
+              <option value="2" {% if selected_hours == '2' %}selected{% endif %}>2 Hours / Day (Standard)</option>
+              <option value="4" {% if selected_hours == '4' %}selected{% endif %}>4 Hours / Day (Intensive)</option>
+              <option value="6" {% if selected_hours == '6' %}selected{% endif %}>6+ Hours / Day (Bootcamp)</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Current Skill Level</label>
+            <select name="level" class="form-select">
+              <option value="Beginner" {% if selected_level == 'Beginner' %}selected{% endif %}>Beginner (Foundations)</option>
+              <option value="Intermediate" {% if selected_level == 'Intermediate' %}selected{% endif %}>Intermediate (Know basics)</option>
+              <option value="Advanced" {% if selected_level == 'Advanced' %}selected{% endif %}>Advanced (Refining skills)</option>
+            </select>
+          </div>
+          <div class="col-12 mt-3">
+            <button type="submit" class="btn btn-primary btn-lg px-4" id="generateBtn">
+              <i class="fa-solid fa-bolt me-2"></i>Generate Learning Roadmap
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if roadmap %}
+  <!-- PROGRESS OVERVIEW -->
+  <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="fw-bold mb-0 text-dark">Roadmap Completion Progress</h5>
+          <small class="text-muted"><span id="completedCountText">{{ completed_items|length }}</span> milestones completed</small>
+        </div>
+        <div class="fs-2 fw-bold text-primary" id="progressPctText">{{ progress_pct }}%</div>
+      </div>
+      <div class="progress" style="height: 12px; border-radius: 6px;">
+        <div class="progress-bar bg-primary progress-bar-striped" id="roadmapProgressBar" role="progressbar" style="width: {{ progress_pct }}%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROADMAP MILESTONES GRID -->
+  <div class="row g-4 mb-4">
+    <!-- Daily Routine Card -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+        <div class="card-header bg-white p-3 border-bottom d-flex align-items-center gap-2">
+          <div class="icon-square bg-success-soft text-success p-2 rounded-3">
+            <i class="fa-solid fa-calendar-day"></i>
+          </div>
+          <h5 class="fw-bold mb-0 text-dark">Daily Action Items</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="d-flex flex-column gap-3">
+            {% for task in roadmap.daily %}
+            {% set item_id = 'daily_' ~ loop.index0 %}
+            <div class="p-3 bg-light rounded-3 border d-flex align-items-start gap-3 task-card" id="card-{{ item_id }}">
+              <input type="checkbox" class="form-check-input fs-5 mt-1 cursor-pointer" 
+                     id="chk-{{ item_id }}" 
+                     {% if item_id in completed_items %}checked{% endif %} 
+                     onchange="toggleRoadmapItem('{{ item_id }}', '{{ roadmap_id }}')">
+              <label class="form-check-label small mb-0 cursor-pointer flex-grow-1 {% if item_id in completed_items %}text-decoration-line-through text-muted{% else %}text-dark fw-medium{% endif %}" 
+                     for="chk-{{ item_id }}" id="label-{{ item_id }}">
+                {{ task }}
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Milestones -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+        <div class="card-header bg-white p-3 border-bottom d-flex align-items-center gap-2">
+          <div class="icon-square bg-primary-soft text-primary p-2 rounded-3">
+            <i class="fa-solid fa-calendar-week"></i>
+          </div>
+          <h5 class="fw-bold mb-0 text-dark">Weekly Milestones</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="d-flex flex-column gap-3">
+            {% for w in roadmap.weekly %}
+            {% set item_id = 'weekly_' ~ loop.index0 %}
+            <div class="p-3 bg-light rounded-3 border d-flex align-items-start gap-3 task-card" id="card-{{ item_id }}">
+              <input type="checkbox" class="form-check-input fs-5 mt-1 cursor-pointer" 
+                     id="chk-{{ item_id }}" 
+                     {% if item_id in completed_items %}checked{% endif %} 
+                     onchange="toggleRoadmapItem('{{ item_id }}', '{{ roadmap_id }}')">
+              <label class="form-check-label small mb-0 cursor-pointer flex-grow-1 {% if item_id in completed_items %}text-decoration-line-through text-muted{% else %}text-dark fw-medium{% endif %}" 
+                     for="chk-{{ item_id }}" id="label-{{ item_id }}">
+                {{ w }}
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Objectives -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+        <div class="card-header bg-white p-3 border-bottom d-flex align-items-center gap-2">
+          <div class="icon-square bg-purple-soft text-purple p-2 rounded-3">
+            <i class="fa-solid fa-calendar-check"></i>
+          </div>
+          <h5 class="fw-bold mb-0 text-dark">Monthly Capstones</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="d-flex flex-column gap-3">
+            {% for m in roadmap.monthly %}
+            {% set item_id = 'monthly_' ~ loop.index0 %}
+            <div class="p-3 bg-light rounded-3 border d-flex align-items-start gap-3 task-card" id="card-{{ item_id }}">
+              <input type="checkbox" class="form-check-input fs-5 mt-1 cursor-pointer" 
+                     id="chk-{{ item_id }}" 
+                     {% if item_id in completed_items %}checked{% endif %} 
+                     onchange="toggleRoadmapItem('{{ item_id }}', '{{ roadmap_id }}')">
+              <label class="form-check-label small mb-0 cursor-pointer flex-grow-1 {% if item_id in completed_items %}text-decoration-line-through text-muted{% else %}text-dark fw-medium{% endif %}" 
+                     for="chk-{{ item_id }}" id="label-{{ item_id }}">
+                {{ m }}
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if roadmap.tips %}
+  <!-- Placement Preparation Tips -->
+  <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-lightbulb text-warning me-2"></i>Personalized Placement Guidance</h5>
+      <ul class="mb-0 text-secondary ps-3">
+        {% for tip in roadmap.tips %}
+        <li class="mb-2">{{ tip }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+
+  {% endif %}
+</div>
+
+<script>
+function handleRoadmapSubmit() {
+  const btn = document.getElementById('generateBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Generating AI Roadmap...';
+  }
+}
+
+function toggleRoadmapItem(itemId, roadmapId) {
+  const chk = document.getElementById(`chk-${itemId}`);
+  const label = document.getElementById(`label-${itemId}`);
+  const isChecked = chk.checked;
+
+  fetch("/api/roadmap/toggle", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ item_id: itemId, roadmap_id: roadmapId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.error) {
+      chk.checked = !isChecked;
+      alert(data.error);
+      return;
+    }
+    if (data.is_completed) {
+      label.classList.add("text-decoration-line-through", "text-muted");
+      label.classList.remove("text-dark", "fw-medium");
+    } else {
+      label.classList.remove("text-decoration-line-through", "text-muted");
+      label.classList.add("text-dark", "fw-medium");
+    }
+    document.getElementById("progressPctText").innerText = `${data.progress_pct}%`;
+    document.getElementById("completedCountText").innerText = `${data.completed_count}`;
+    document.getElementById("roadmapProgressBar").style.width = `${data.progress_pct}%`;
+  })
+  .catch(err => {
+    console.error("Roadmap toggle error:", err);
+    chk.checked = !isChecked;
+  });
+}
+</script>
+{% endblock %}

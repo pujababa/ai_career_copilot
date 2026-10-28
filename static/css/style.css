@@ -2018,8 +2018,114 @@ select {
     justify-content: space-between;
   }
 
-  .cards-grid {
-    gap: 12px;
-  }
+/* Light mode variables & theme overrides */
+body.light-mode {
+  --bg-body: #f8fafc;
+  --bg-elevated: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-soft: #f1f5f9;
+  --bg-sidebar: #ffffff;
+  --bg-sidebar-alt: #f8fafc;
+  --border-subtle: rgba(203, 213, 225, 0.8);
+  --border-strong: rgba(148, 163, 184, 0.5);
+  --text-main: #1e293b;
+  --text-muted: #475569;
+  --text-soft: #64748b;
+  --text-strong: #0f172a;
+  --shadow-soft: 0 18px 45px rgba(148, 163, 184, 0.2);
+  --shadow-subtle: 0 12px 35px rgba(148, 163, 184, 0.15);
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.1), transparent 55%),
+    radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 55%),
+    linear-gradient(145deg, #f8fafc, #f1f5f9);
 }
+
+body.light-mode .card,
+body.light-mode .auth-card,
+body.light-mode .sidebar,
+body.light-mode .user-pill,
+body.light-mode .kpi,
+body.light-mode .welcome-meta {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(203, 213, 225, 0.8);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
+body.light-mode .nav-link:hover {
+  background: rgba(241, 245, 249, 0.9);
+  color: var(--accent-strong);
+}
+
+body.light-mode .form-group input,
+body.light-mode .form-group select,
+body.light-mode .form-group textarea,
+body.light-mode .chat-input {
+  background: #ffffff;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+
+/* Glassmorphism & UI Utility Classes */
+.glass-card {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-subtle);
+}
+
+body.light-mode .glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(203, 213, 225, 0.8);
+}
+
+.theme-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.05);
+  border-color: var(--accent);
+}
+
+.notif-btn {
+  position: relative;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ef4444;
+  box-shadow: 0 0 0 2px var(--bg-body);
+}
+
+.badge-green { background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); }
+.badge-purple { background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.4); }
+.badge-blue { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.4); }
+.badge-amber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); }
+
 

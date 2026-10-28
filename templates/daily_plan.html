@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Header Banner -->
+  <div class="card text-white mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px;">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <h2 class="fw-bold mb-1"><i class="fa-solid fa-calendar-check me-2"></i>AI Daily Preparation Plan</h2>
+          <p class="mb-0 text-white-50">Personalized 3-task placement agenda calculated for {{ plan.plan_date }}.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-light text-dark px-3 py-2 fs-6"><i class="fa-solid fa-crosshair me-1 text-success"></i>{{ context.target_role|default('Software Developer') }}</span>
+          <span class="badge bg-warning text-dark px-3 py-2 fs-6"><i class="fa-solid fa-fire me-1"></i>Streak: {{ current_user.study_streak|default(1) }} Days</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAILY PLAN PROGRESS CARD -->
+  <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="fw-bold mb-0 text-dark">Today's Preparation Progress</h5>
+          <small class="text-muted"><span id="planCompletedCount">{{ plan.completed_count }}</span> of {{ plan.total_tasks }} tasks completed</small>
+        </div>
+        <div class="fs-2 fw-bold text-success" id="planPctText">{{ plan.percentage }}%</div>
+      </div>
+      
+      <div class="progress" style="height: 12px; border-radius: 6px;">
+        <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" id="planProgressBar" role="progressbar" style="width: {{ plan.percentage }}%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TASKS LIST SECTION -->
+  <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <h4 class="fw-bold mb-3"><i class="fa-solid fa-list-check text-success me-2"></i>Actionable Placement Agenda</h4>
+
+      <div class="d-flex flex-column gap-3" id="dailyTasksContainer">
+        {% for task in plan.tasks %}
+        <div class="card border p-3 task-item-card {% if task.completed %}bg-light opacity-75{% endif %}" id="card-{{ task.task_id }}" style="border-radius: 12px; transition: all 0.2s ease;">
+          <div class="d-flex align-items-start gap-3">
+            <div class="pt-1">
+              <input type="checkbox" class="form-check-input fs-4 cursor-pointer" id="chk-{{ task.task_id }}" {% if task.completed %}checked{% endif %} onchange="toggleTaskCompletion('{{ task.task_id }}')">
+            </div>
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                <h5 class="fw-bold mb-0 {% if task.completed %}text-decoration-line-through text-muted{% else %}text-dark{% endif %}" id="title-{{ task.task_id }}">
+                  {{ task.title }}
+                </h5>
+                <div>
+                  <span class="badge bg-soft-primary text-primary me-2">{{ task.category }}</span>
+                  <span class="badge bg-light text-secondary border"><i class="fa-regular fa-clock me-1"></i>{{ task.estimated_minutes }} mins</span>
+                </div>
+              </div>
+              <p class="text-secondary small mb-0">{{ task.description }}</p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- WEAK AREAS & FOCUS RECOMMENDATION -->
+  <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <h5 class="fw-bold mb-3"><i class="fa-solid fa-bullseye text-danger me-2"></i>Your Target Focus Areas</h5>
+      {% if context.weak_topics %}
+      <div class="d-flex flex-wrap gap-2">
+        {% for wt in context.weak_topics %}
+        <span class="badge bg-soft-danger text-danger px-3 py-2 fs-6 border border-danger-subtle"><i class="fa-solid fa-triangle-exclamation me-1"></i>{{ wt }}</span>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted mb-0"><i class="fa-solid fa-circle-check text-success me-2"></i>No major weak topics identified. Keep practicing coding and CS concepts!</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleTaskCompletion(taskId) {
+  const chk = document.getElementById(`chk-${taskId}`);
+  const isChecked = chk.checked;
+
+  fetch("/api/daily-plan/toggle-task", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ task_id: taskId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.error) {
+      chk.checked = !isChecked;
+      alert(data.error);
+      return;
+    }
+
+    document.getElementById("planCompletedCount").innerText = data.completed_count;
+    document.getElementById("planPctText").innerText = `${data.percentage}%`;
+    document.getElementById("planProgressBar").style.width = `${data.percentage}%`;
+
+    const titleEl = document.getElementById(`title-${taskId}`);
+    const cardEl = document.getElementById(`card-${taskId}`);
+
+    if (data.completed) {
+      titleEl.classList.add("text-decoration-line-through", "text-muted");
+      cardEl.classList.add("bg-light", "opacity-75");
+    } else {
+      titleEl.classList.remove("text-decoration-line-through", "text-muted");
+      cardEl.classList.remove("bg-light", "opacity-75");
+    }
+  })
+  .catch(err => {
+    chk.checked = !isChecked;
+    console.error("Error toggling task:", err);
+  });
+}
+</script>
+{% endblock %}

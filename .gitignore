@@ -1,5 +1,25 @@
+# Python / Virtual Environment
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
 venv/
-.env
-database.db
+.venv/
+env/
+
+# Environment Variables & Secrets
+.env*
+!.env.example
+
+# Databases & Backups
+*.db
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+*_backup_*.*
+.*_backup_*
+
+# Uploaded Files & Private Resumes
+uploads/*
+!uploads/.gitkeep
+AUDIT_REPORT.md

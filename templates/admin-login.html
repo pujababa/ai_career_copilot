@@ -3,9 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Login – AI Career Copilot</title>
+    <title>Admin Portal Login – AI Career Copilot</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <style>
+      .pw-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      .pw-wrapper input {
+        width: 100%;
+        padding-right: 40px !important;
+      }
+      .pw-toggle {
+        position: absolute;
+        right: 12px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 14px;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .pw-toggle:hover {
+        color: var(--text-strong);
+      }
+      .admin-btn {
+        background: linear-gradient(135deg, #059669, #10b981) !important;
+        box-shadow: 0 14px 30px rgba(16, 185, 129, 0.4) !important;
+      }
+      .admin-btn:hover {
+        box-shadow: 0 18px 36px rgba(16, 185, 129, 0.6) !important;
+      }
+    </style>
   </head>
   <body class="auth-body">
     <main class="auth-center">
@@ -13,7 +47,7 @@
         <div class="brand-logo-circle" style="background: radial-gradient(circle at 30% 0%, #34d399, #059669);">AD</div>
         <div>
           <h1 class="brand-title">Admin Portal</h1>
-          <p class="brand-subtitle">System management and analytics dashboard.</p>
+          <p class="brand-subtitle">System Management & Institutional Control</p>
         </div>
       </header>
 
@@ -21,32 +55,77 @@
         {% if messages %}
           <div class="flash-messages">
             {% for msg in messages %}
-              <p class="flash-msg">{{ msg }}</p>
+              <div class="flash-msg">{{ msg }}</div>
             {% endfor %}
           </div>
         {% endif %}
       {% endwith %}
 
       <section class="auth-card">
-        <form class="auth-panel active" method="post" action="{{ url_for('admin_login') }}">
+        {% if current_user and current_user.id and current_user.role == 'admin' %}
+        <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; color: var(--text-strong);">
+          <span><i class="fa-solid fa-user-shield" style="color: #34d399; margin-right: 6px;"></i> Signed in as Administrator (<strong>{{ current_user.name }}</strong>)</span>
+          <a href="{{ url_for('admin') }}" class="btn btn-primary small admin-btn" style="padding: 6px 12px; font-size: 12px;">Go to Admin Console &rarr;</a>
+        </div>
+        {% endif %}
+
+        <form class="auth-panel active" method="post" action="{{ url_for('admin_login') }}" onsubmit="return validateAdminLoginForm();">
+          <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
           <div class="auth-card-header">
-            <h2>Administrator Sign in</h2>
-            <p class="auth-subtitle">Secure access for system administrators only.</p>
+            <h2>Administrator Sign In</h2>
+            <p class="auth-subtitle">Restricted to authorized system administrators.</p>
           </div>
           <div class="form-group">
-            <label for="email">Admin Email</label>
-            <input type="email" name="email" placeholder="admin@careercopilot.com" required />
+            <label for="admin-email">Administrator Email or Username</label>
+            <input type="text" id="admin-email" name="email" placeholder="admin@example.com or admin" required autocomplete="username" />
           </div>
           <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" name="password" placeholder="••••••••" required />
+            <label for="admin-password">Password</label>
+            <div class="pw-wrapper">
+              <input type="password" id="admin-password" name="password" placeholder="••••••••" required autocomplete="current-password" />
+              <button type="button" class="pw-toggle" onclick="toggleAdminPassword(this)" title="Toggle password visibility">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
           </div>
-          <button class="btn btn-primary btn-full" type="submit" style="background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 14px 30px rgba(16, 185, 129, 0.5);">Login as Admin</button>
-          <div style="margin-top: 15px; text-align: center;">
-            <a href="{{ url_for('index') }}" class="link-muted"><i class="fa-solid fa-arrow-left"></i> Back to selection</a>
+          <button class="btn btn-primary btn-full admin-btn" type="submit" style="margin-top: 8px;">
+            <i class="fa-solid fa-shield-halved"></i> Sign In as Administrator
+          </button>
+          <div style="margin-top: 18px; text-align: center; display: flex; justify-content: space-between; font-size: 13px;">
+            <a href="{{ url_for('index') }}" class="link-muted"><i class="fa-solid fa-arrow-left"></i> Home</a>
+            <a href="{{ url_for('student_login') }}" class="link-muted"><i class="fa-solid fa-graduation-cap"></i> Student Portal</a>
           </div>
         </form>
       </section>
     </main>
+
+    <script>
+      function toggleAdminPassword(btn) {
+        const input = document.getElementById('admin-password');
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.className = 'fa-regular fa-eye-slash';
+        } else {
+          input.type = 'password';
+          icon.className = 'fa-regular fa-eye';
+        }
+      }
+
+      function validateAdminLoginForm() {
+        const email = document.getElementById('admin-email').value.trim();
+        if (!email) {
+          alert('Please enter your administrator email or username.');
+          return false;
+        }
+        const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/;
+        const usernameRegex = /^[a-zA-Z0-9_.-]{3,}$/;
+        if (!emailRegex.test(email) && !usernameRegex.test(email)) {
+          alert('Please enter a valid administrator email address or username.');
+          return false;
+        }
+        return true;
+      }
+    </script>
   </body>
 </html>

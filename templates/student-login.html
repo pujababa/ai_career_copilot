@@ -3,17 +3,70 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Student Login – AI Career Copilot</title>
+    <title>Sign In & Registration – AI Career Copilot</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <style>
+      .pw-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      .pw-wrapper input {
+        width: 100%;
+        padding-right: 40px !important;
+      }
+      .pw-toggle {
+        position: absolute;
+        right: 12px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 14px;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .pw-toggle:hover {
+        color: var(--text-strong);
+      }
+      .auth-divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 18px 0;
+        color: var(--text-soft);
+        font-size: 12px;
+      }
+      .match-status {
+        font-size: 12px;
+        margin-top: 4px;
+        display: none;
+      }
+      .match-status.valid {
+        color: var(--success);
+        display: block;
+      }
+      .match-status.invalid {
+        color: var(--danger);
+        display: block;
+      }
+      .auth-switch-link {
+        color: var(--accent);
+        cursor: pointer;
+        text-decoration: underline;
+      }
+    </style>
   </head>
   <body class="auth-body">
     <main class="auth-center">
       <header class="auth-brand-minimal">
         <div class="brand-logo-circle">AI</div>
         <div>
-          <h1 class="brand-title">Student Portal</h1>
-          <p class="brand-subtitle">Access your career quiz, resume analyzer, and more.</p>
+          <h1 class="brand-title">AI Career Copilot</h1>
+          <p class="brand-subtitle">AI-Powered Placement & Career Guidance</p>
         </div>
       </header>
 
@@ -21,58 +74,286 @@
         {% if messages %}
           <div class="flash-messages">
             {% for msg in messages %}
-              <p class="flash-msg">{{ msg }}</p>
+              <div class="flash-msg">{{ msg }}</div>
             {% endfor %}
           </div>
         {% endif %}
       {% endwith %}
 
       <section class="auth-card">
-        <div class="auth-tabs" data-auth-tabs>
-          <button type="button" class="auth-tab active" data-auth-tab="login">Sign in</button>
-          <button type="button" class="auth-tab" data-auth-tab="signup">Sign up</button>
+        {% if current_user and current_user.id %}
+        <div style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.4); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; color: var(--text-strong);">
+          <span><i class="fa-solid fa-circle-user" style="color: var(--accent); margin-right: 6px;"></i> Signed in as <strong>{{ current_user.name }}</strong></span>
+          <a href="{{ url_for('dashboard') }}" class="btn btn-primary small" style="padding: 6px 12px; font-size: 12px;">Go to Dashboard &rarr;</a>
+        </div>
+        {% endif %}
+
+        <div class="auth-tabs" id="authTabs">
+          <button type="button" class="auth-tab {{ 'active' if not active_tab or active_tab == 'login' else '' }}" onclick="switchTab('login')">Sign In</button>
+          <button type="button" class="auth-tab {{ 'active' if active_tab == 'signup' else '' }}" onclick="switchTab('signup')">Sign Up</button>
+          <button type="button" class="auth-tab {{ 'active' if active_tab == 'forgot' else '' }}" onclick="switchTab('forgot')">Reset</button>
         </div>
 
-        <form class="auth-panel active" data-auth-panel="login" method="post" action="{{ url_for('student_login') }}">
+        <!-- 1. LOGIN PANEL -->
+        <form id="loginPanel" class="auth-panel {{ 'active' if not active_tab or active_tab == 'login' else '' }}" method="post" action="{{ url_for('student_login') }}" onsubmit="return validateLoginForm();">
+          <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
           <div class="auth-card-header">
-            <h2>Student Sign in</h2>
-            <p class="auth-subtitle">Welcome back! Please enter your details.</p>
+            <h2>Welcome Back</h2>
+            <p class="auth-subtitle">Enter your credentials to access your dashboard.</p>
           </div>
+
           <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" name="email" placeholder="student@example.com" required />
+            <label for="login-email">Email Address</label>
+            <input type="email" id="login-email" name="email" placeholder="student@example.com" required autocomplete="email" />
           </div>
+
           <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" name="password" placeholder="••••••••" required />
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label for="login-password">Password</label>
+              <a href="javascript:void(0)" onclick="switchTab('forgot')" style="font-size: 12px; color: var(--accent);">Forgot password?</a>
+            </div>
+            <div class="pw-wrapper">
+              <input type="password" id="login-password" name="password" placeholder="••••••••" required autocomplete="current-password" />
+              <button type="button" class="pw-toggle" onclick="togglePassword('login-password', this)" title="Toggle password visibility">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
           </div>
-          <button class="btn btn-primary btn-full" type="submit">Login</button>
-          <div style="margin-top: 15px; text-align: center;">
-            <a href="{{ url_for('index') }}" class="link-muted"><i class="fa-solid fa-arrow-left"></i> Back to selection</a>
+
+          <button class="btn btn-primary btn-full" type="submit" id="loginBtn" style="margin-top: 8px;">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </button>
+
+          <div style="margin-top: 18px; text-align: center; display: flex; justify-content: space-between; font-size: 13px;">
+            <a href="{{ url_for('index') }}" class="link-muted"><i class="fa-solid fa-arrow-left"></i> Home</a>
+            <a href="{{ url_for('admin_login') }}" class="link-muted"><i class="fa-solid fa-user-shield"></i> Admin Portal</a>
           </div>
         </form>
 
-        <form class="auth-panel" data-auth-panel="signup" method="post" action="{{ url_for('signup') }}">
+        <!-- 2. SIGNUP PANEL -->
+        <form id="signupPanel" class="auth-panel {{ 'active' if active_tab == 'signup' else '' }}" method="post" action="{{ url_for('signup') }}" onsubmit="return validateSignupForm();">
           <div class="auth-card-header">
-            <h2>Student Sign up</h2>
-            <p class="auth-subtitle">Create an account. Admin approval required.</p>
+            <h2>Create Account</h2>
+            <p class="auth-subtitle">Join AI Career Copilot to accelerate your career.</p>
           </div>
+
           <div class="form-group">
-            <label for="name">Full Name</label>
-            <input type="text" name="name" placeholder="John Doe" required />
+            <label for="signup-name">Full Name</label>
+            <input type="text" id="signup-name" name="name" placeholder="John Doe" required autocomplete="name" />
           </div>
+
           <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" name="email" placeholder="student@example.com" required />
+            <label for="signup-email">Email Address</label>
+            <input type="email" id="signup-email" name="email" placeholder="student@example.com" required autocomplete="email" />
           </div>
+
           <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" name="password" placeholder="At least 6 characters" required minlength="6" />
+            <label for="signup-role">Target Career Role</label>
+            <input type="text" id="signup-role" name="target_role" placeholder="e.g. Software Developer, Data Scientist" value="Software Developer" required />
           </div>
-          <button class="btn btn-primary btn-full" type="submit">Create Account</button>
+
+          <div class="form-group">
+            <label for="signup-password">Password (minimum 8 characters)</label>
+            <div class="pw-wrapper">
+              <input type="password" id="signup-password" name="password" placeholder="e.g. Pu@12345" required minlength="8" autocomplete="new-password" oninput="checkPasswordMatch();" />
+              <button type="button" class="pw-toggle" onclick="togglePassword('signup-password', this)" title="Toggle password visibility">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <small style="display:block; font-size: 11px; color: var(--text-muted); margin-top: 4px;">Must be at least 8 characters and contain at least one letter, one number, and one special character.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="signup-confirm-password">Confirm Password</label>
+            <div class="pw-wrapper">
+              <input type="password" id="signup-confirm-password" name="confirm_password" placeholder="••••••••" required minlength="8" autocomplete="new-password" oninput="checkPasswordMatch();" />
+              <button type="button" class="pw-toggle" onclick="togglePassword('signup-confirm-password', this)" title="Toggle password visibility">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <div id="pwMatchStatus" class="match-status"></div>
+          </div>
+
+          <button class="btn btn-primary btn-full" type="submit" id="signupBtn" style="margin-top: 8px;">
+            <i class="fa-solid fa-user-plus"></i> Create Student Account
+          </button>
+
+          <div style="margin-top: 14px; text-align: center; font-size: 13px; color: var(--text-muted);">
+            Already have an account? <span class="auth-switch-link" onclick="switchTab('login')">Sign In</span>
+          </div>
+        </form>
+
+        <!-- 3. FORGOT PASSWORD PANEL -->
+        <form id="forgotPanel" class="auth-panel {{ 'active' if active_tab == 'forgot' else '' }}" method="post" action="{{ url_for('forgot_password') }}" onsubmit="return validateForgotForm();">
+          <div class="auth-card-header">
+            <h2>Reset Password</h2>
+            <p class="auth-subtitle">Verify your email and update your account password safely.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="forgot-email">Registered Email Address</label>
+            <input type="email" id="forgot-email" name="email" value="{{ reset_email|default('') }}" placeholder="student@example.com" required autocomplete="email" />
+          </div>
+
+          {% if step == 2 %}
+          <div class="form-group">
+            <label for="forgot-new-password">New Password (minimum 8 characters)</label>
+            <div class="pw-wrapper">
+              <input type="password" id="forgot-new-password" name="new_password" placeholder="e.g. Pu@12345" required minlength="8" />
+              <button type="button" class="pw-toggle" onclick="togglePassword('forgot-new-password', this)" title="Toggle password visibility">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <small style="display:block; font-size: 11px; color: var(--text-muted); margin-top: 4px;">Must be at least 8 characters and contain at least one letter, one number, and one special character.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="forgot-confirm-password">Confirm New Password</label>
+            <div class="pw-wrapper">
+              <input type="password" id="forgot-confirm-password" name="confirm_password" placeholder="••••••••" required minlength="8" />
+              <button type="button" class="pw-toggle" onclick="togglePassword('forgot-confirm-password', this)" title="Toggle password visibility">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-full" type="submit" style="margin-top: 8px;">
+            <i class="fa-solid fa-key"></i> Update Password
+          </button>
+          {% else %}
+          <button class="btn btn-primary btn-full" type="submit" style="margin-top: 8px;">
+            <i class="fa-solid fa-paper-plane"></i> Verify Email & Reset
+          </button>
+          {% endif %}
+
+          <div style="margin-top: 14px; text-align: center; font-size: 13px; color: var(--text-muted);">
+            Remembered your credentials? <span class="auth-switch-link" onclick="switchTab('login')">Back to Sign In</span>
+          </div>
         </form>
       </section>
     </main>
-    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+
+    <script>
+      function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.className = 'fa-regular fa-eye-slash';
+        } else {
+          input.type = 'password';
+          icon.className = 'fa-regular fa-eye';
+        }
+      }
+
+      function switchTab(tab) {
+        const tabs = document.querySelectorAll('.auth-tab');
+        const panels = document.querySelectorAll('.auth-panel');
+        
+        tabs.forEach(t => t.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+
+        if (tab === 'login') {
+          tabs[0].classList.add('active');
+          document.getElementById('loginPanel').classList.add('active');
+        } else if (tab === 'signup') {
+          tabs[1].classList.add('active');
+          document.getElementById('signupPanel').classList.add('active');
+        } else if (tab === 'forgot') {
+          tabs[2].classList.add('active');
+          document.getElementById('forgotPanel').classList.add('active');
+        }
+      }
+
+      function checkPasswordMatch() {
+        const pw = document.getElementById('signup-password').value;
+        const confirmPw = document.getElementById('signup-confirm-password').value;
+        const statusEl = document.getElementById('pwMatchStatus');
+
+        if (!confirmPw) {
+          statusEl.className = 'match-status';
+          statusEl.textContent = '';
+          return;
+        }
+
+        if (pw === confirmPw) {
+          statusEl.className = 'match-status valid';
+          statusEl.innerHTML = '<i class="fa-solid fa-check"></i> Passwords match';
+        } else {
+          statusEl.className = 'match-status invalid';
+          statusEl.innerHTML = '<i class="fa-solid fa-xmark"></i> Passwords do not match';
+        }
+      }
+
+      function validateEmail(email) {
+        const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/;
+        return emailRegex.test(email);
+      }
+
+      function validatePasswordRequirement(pw) {
+        if (!pw || pw.length < 8) {
+          return { valid: false, message: 'Password must be at least 8 characters long.' };
+        }
+        const hasLetter = /[a-zA-Z]/.test(pw);
+        const hasNumber = /[0-9]/.test(pw);
+        const hasSpecial = /[^a-zA-Z0-9]/.test(pw);
+        if (!hasLetter || !hasNumber || !hasSpecial) {
+          return { valid: false, message: 'Password must contain at least one letter, one number, and one special character.' };
+        }
+        return { valid: true };
+      }
+
+      function validateLoginForm() {
+        const email = document.getElementById('login-email').value.trim();
+        if (!validateEmail(email)) {
+          alert('Please enter a valid email address.');
+          return false;
+        }
+        return true;
+      }
+
+      function validateSignupForm() {
+        const email = document.getElementById('signup-email').value.trim();
+        if (!validateEmail(email)) {
+          alert('Please enter a valid email address.');
+          return false;
+        }
+        const pw = document.getElementById('signup-password').value;
+        const confirmPw = document.getElementById('signup-confirm-password').value;
+        const pwRes = validatePasswordRequirement(pw);
+        if (!pwRes.valid) {
+          alert(pwRes.message);
+          return false;
+        }
+        if (pw !== confirmPw) {
+          alert('Passwords do not match. Please ensure both passwords match.');
+          return false;
+        }
+        return true;
+      }
+
+      function validateForgotForm() {
+        const email = document.getElementById('forgot-email').value.trim();
+        if (!validateEmail(email)) {
+          alert('Please enter a valid email address.');
+          return false;
+        }
+        const newPwInput = document.getElementById('forgot-new-password');
+        if (newPwInput) {
+          const newPw = newPwInput.value;
+          const confirmPw = document.getElementById('forgot-confirm-password').value;
+          const pwRes = validatePasswordRequirement(newPw);
+          if (!pwRes.valid) {
+            alert(pwRes.message);
+            return false;
+          }
+          if (newPw !== confirmPw) {
+            alert('Passwords do not match. Please ensure both passwords match.');
+            return false;
+          }
+        }
+        return true;
+      }
+    </script>
   </body>
 </html>

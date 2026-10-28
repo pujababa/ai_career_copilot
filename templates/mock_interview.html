@@ -1,0 +1,431 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Header Banner -->
+  <div class="card text-white mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); border-radius: 16px;">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <h2 class="fw-bold mb-1"><i class="fa-solid fa-headset me-2"></i>AI Placement Mock Interview</h2>
+          <p class="mb-0 text-white-50">Practice Technical and HR interviews with real-time multi-dimensional AI evaluation.</p>
+        </div>
+        <button class="btn btn-light fw-semibold text-primary px-4 py-2" onclick="scrollToConfig()">
+          <i class="fa-solid fa-play me-1"></i> Start New Interview
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERVIEW SETUP CONFIG -->
+  <div id="interviewConfigSection" class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <h4 class="fw-bold mb-3"><i class="fa-solid fa-sliders text-indigo me-2"></i>Configure Mock Interview</h4>
+      
+      <div class="row g-3 mb-4">
+        <!-- Category Cards -->
+        <div class="col-md-4">
+          <div class="card h-100 category-card border p-3 cursor-pointer border-primary" onclick="selectInterviewCategory('Technical Interview')" id="typeCard-Tech" style="border-radius: 12px; background: rgba(79, 70, 229, 0.03);">
+            <div class="d-flex align-items-center mb-2">
+              <div class="icon-square bg-primary-soft text-primary p-3 rounded-3 me-3">
+                <i class="fa-solid fa-laptop-code fa-xl"></i>
+              </div>
+              <div>
+                <h5 class="fw-bold mb-0">Technical Interview</h5>
+                <small class="text-muted">Target Role & Core Concepts</small>
+              </div>
+            </div>
+            <p class="small text-secondary mb-0">Tests algorithms, system architecture, SQL, and technical weak areas.</p>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card h-100 category-card border p-3 cursor-pointer" onclick="selectInterviewCategory('HR Interview')" id="typeCard-HR" style="border-radius: 12px;">
+            <div class="d-flex align-items-center mb-2">
+              <div class="icon-square bg-info-soft text-info p-3 rounded-3 me-3">
+                <i class="fa-solid fa-user-tie fa-xl"></i>
+              </div>
+              <div>
+                <h5 class="fw-bold mb-0">HR & Behavioral</h5>
+                <small class="text-muted">STAR Method & Culture Fit</small>
+              </div>
+            </div>
+            <p class="small text-secondary mb-0">Tests teamwork, project challenges, career goals, and situational answers.</p>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card h-100 category-card border p-3 cursor-pointer" onclick="selectInterviewCategory('Mixed Interview')" id="typeCard-Mixed" style="border-radius: 12px;">
+            <div class="d-flex align-items-center mb-2">
+              <div class="icon-square bg-purple-soft text-purple p-3 rounded-3 me-3">
+                <i class="fa-solid fa-layer-group fa-xl"></i>
+              </div>
+              <div>
+                <h5 class="fw-bold mb-0">Mixed Round</h5>
+                <small class="text-muted">Technical + HR Combined</small>
+              </div>
+            </div>
+            <p class="small text-secondary mb-0">Complete end-to-end placement round simulation.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Target Job Role</label>
+          <input type="text" class="form-control" id="interviewTargetRole" value="{{ context.target_role|default('Software Developer') }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Number of Questions</label>
+          <select class="form-select" id="interviewCount">
+            <option value="5" selected>5 Questions (Standard Round)</option>
+            <option value="7">7 Questions</option>
+            <option value="10">10 Questions (Full Assessment)</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <button class="btn btn-primary btn-lg w-100" onclick="startInterviewSession()">
+            <i class="fa-solid fa-circle-play me-2"></i>Begin Mock Session
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVE INTERVIEW SESSION -->
+  <div id="interviewActiveSection" class="card border-0 shadow-lg mb-4 d-none" style="border-radius: 16px;">
+    <div class="card-header bg-white p-4 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <span class="badge bg-primary px-3 py-2" id="activeIntCategory">Technical Interview</span>
+        <span class="text-muted ms-2 fw-semibold" id="activeIntRole">Target: Software Developer</span>
+      </div>
+      <button class="btn btn-outline-danger btn-sm" onclick="endInterviewEarly()">End Session</button>
+    </div>
+
+    <div class="card-body p-4">
+      <div class="progress mb-4" style="height: 8px; border-radius: 4px;">
+        <div class="progress-bar bg-primary" id="intProgressBar" role="progressbar" style="width: 20%;"></div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="badge bg-light text-dark border px-3 py-2" id="intQCounter">Question 1 of 5</span>
+        <span class="badge bg-soft-info text-info fw-semibold">AI Interviewer active</span>
+      </div>
+
+      <!-- Question Box -->
+      <div class="p-4 bg-light rounded-3 mb-4 border">
+        <h5 class="fw-bold mb-0 text-dark" id="intQuestionText">Interviewer question will load here...</h5>
+      </div>
+
+      <!-- Candidate Answer Textarea -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Your Answer</label>
+        <textarea id="candidateAnswerInput" class="form-control" rows="5" placeholder="Type your answer clearly using technical terms and structure..."></textarea>
+      </div>
+
+      <div class="d-flex justify-content-end mb-4">
+        <button class="btn btn-primary px-5 btn-lg" id="submitAnswerBtn" onclick="submitCurrentAnswer()">
+          <i class="fa-solid fa-paper-plane me-2"></i>Submit & Evaluate Answer
+        </button>
+      </div>
+
+      <!-- QUESTION FEEDBACK EVALUATION CARD (Revealed per question) -->
+      <div id="qEvalCard" class="card border-primary p-3 bg-light rounded-3 d-none">
+        <h6 class="fw-bold text-primary mb-2"><i class="fa-solid fa-chart-bar me-2"></i>Question Evaluation Score: <span id="qEvalScore">80%</span></h6>
+        
+        <div class="row g-2 text-center mb-3">
+          <div class="col"><small class="text-muted d-block">Relevance</small><strong id="qEvalRel">80%</strong></div>
+          <div class="col"><small class="text-muted d-block">Accuracy</small><strong id="qEvalAcc">80%</strong></div>
+          <div class="col"><small class="text-muted d-block">Communication</small><strong id="qEvalComm">80%</strong></div>
+          <div class="col"><small class="text-muted d-block">Clarity</small><strong id="qEvalClar">80%</strong></div>
+          <div class="col"><small class="text-muted d-block">Problem Solving</small><strong id="qEvalPS">80%</strong></div>
+        </div>
+
+        <div class="small mb-2">
+          <strong>AI Critique:</strong> <span id="qEvalFeedback">Good response!</span>
+        </div>
+        <div class="p-2 bg-white rounded text-secondary small border">
+          <strong>Ideal Answer Guidance:</strong> <span id="qEvalIdeal">State context, technical action, and quantifiable outcome.</span>
+        </div>
+        
+        <div class="text-end mt-3">
+          <button class="btn btn-success px-4" id="nextQuestionBtn" onclick="proceedToNextQuestion()">
+            Proceed to Next Question <i class="fa-solid fa-arrow-right ms-1"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINAL INTERVIEW REPORT SECTION -->
+  <div id="interviewReportSection" class="card border-0 shadow-lg mb-4 d-none" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <div class="text-center mb-4">
+        <div class="icon-square bg-success-soft text-success p-4 rounded-circle d-inline-flex mb-2">
+          <i class="fa-solid fa-medal fa-3x"></i>
+        </div>
+        <h3 class="fw-bold mb-1">Interview Completed!</h3>
+        <p class="text-muted">Here is your comprehensive multi-dimensional AI interview report.</p>
+      </div>
+
+      <!-- Overall Score Summary -->
+      <div class="row g-3 mb-4 text-center">
+        <div class="col-md-4">
+          <div class="p-3 bg-light rounded-3 border">
+            <small class="text-muted d-block fw-semibold">OVERALL INTERVIEW SCORE</small>
+            <span class="fs-1 fw-bold text-primary" id="repOverallScore">78%</span>
+          </div>
+        </div>
+        <div class="col-md-8">
+          <div class="p-3 bg-light rounded-3 border h-100 d-flex align-items-center justify-content-around">
+            <div><small class="text-muted d-block">Technical Accuracy</small><strong class="fs-4 text-dark" id="repAcc">80%</strong></div>
+            <div><small class="text-muted d-block">Communication</small><strong class="fs-4 text-dark" id="repComm">80%</strong></div>
+            <div><small class="text-muted d-block">Problem Solving</small><strong class="fs-4 text-dark" id="repPS">80%</strong></div>
+            <div><small class="text-muted d-block">Relevance</small><strong class="fs-4 text-dark" id="repRel">80%</strong></div>
+            <div><small class="text-muted d-block">Clarity</small><strong class="fs-4 text-dark" id="repClar">80%</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Strengths vs Areas to Improve -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <div class="card border-success border-2 h-100 p-3" style="border-radius: 12px; background: rgba(16, 185, 129, 0.03);">
+            <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-circle-check me-2"></i>Strong Performance Areas</h6>
+            <div id="repStrengthsContainer" class="d-flex flex-wrap gap-2"></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card border-warning border-2 h-100 p-3" style="border-radius: 12px; background: rgba(245, 158, 11, 0.03);">
+            <h6 class="fw-bold text-warning mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Areas for Improvement</h6>
+            <div id="repWeaknessContainer" class="d-flex flex-wrap gap-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="p-3 bg-light rounded-3 border mb-4">
+        <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-lightbulb me-2 text-warning"></i>Recommended Actionable Topics</h6>
+        <div id="repRecTopicsContainer" class="d-flex flex-wrap gap-2"></div>
+      </div>
+
+      <div class="text-center">
+        <button class="btn btn-primary px-5 btn-lg" onclick="resetInterviewConfig()">
+          <i class="fa-solid fa-rotate-right me-2"></i>Start Another Mock Interview
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT INTERVIEWS HISTORY -->
+  <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+    <div class="card-body p-4">
+      <h5 class="fw-bold mb-3"><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Past Mock Interview History</h5>
+      {% if history %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Overall Score</th>
+              <th>Feedback Summary</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for h in history %}
+            <tr>
+              <td><small class="text-muted">{{ h.created_at }}</small></td>
+              <td><span class="badge bg-soft-primary text-primary fw-semibold">{{ h.category }}</span></td>
+              <td class="fw-bold">{{ h.score }}%</td>
+              <td><small class="text-dark">{{ h.feedback }}</small></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted text-center py-4 mb-0"><i class="fa-solid fa-circle-info me-2"></i>No mock interview history found. Start your first session above!</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedCategory = "Technical Interview";
+let currentQuestions = [];
+let currentQIndex = 0;
+let questionEvaluations = [];
+
+function scrollToConfig() {
+  document.getElementById("interviewConfigSection").scrollIntoView({ behavior: 'smooth' });
+}
+
+function selectInterviewCategory(cat) {
+  selectedCategory = cat;
+  document.querySelectorAll(".category-card").forEach(c => c.classList.remove("border-primary"));
+  
+  if (cat.includes("Technical")) document.getElementById("typeCard-Tech").classList.add("border-primary");
+  else if (cat.includes("HR")) document.getElementById("typeCard-HR").classList.add("border-primary");
+  else document.getElementById("typeCard-Mixed").classList.add("border-primary");
+}
+
+function startInterviewSession() {
+  const targetRole = document.getElementById("interviewTargetRole").value;
+  const count = document.getElementById("interviewCount").value;
+
+  fetch("/api/mock-interview/start", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ category: selectedCategory, target_role: targetRole, question_count: count })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.questions || data.questions.length === 0) {
+      alert("Failed to generate questions.");
+      return;
+    }
+
+    currentQuestions = data.questions;
+    currentQIndex = 0;
+    questionEvaluations = [];
+
+    document.getElementById("activeIntCategory").innerText = data.category;
+    document.getElementById("activeIntRole").innerText = `Target: ${data.target_role}`;
+
+    document.getElementById("interviewConfigSection").classList.add("d-none");
+    document.getElementById("interviewReportSection").classList.add("d-none");
+    document.getElementById("interviewActiveSection").classList.remove("d-none");
+
+    renderQuestion();
+  })
+  .catch(err => {
+    console.error("Error starting interview:", err);
+    alert("Error starting interview session.");
+  });
+}
+
+function renderQuestion() {
+  document.getElementById("intQCounter").innerText = `Question ${currentQIndex + 1} of ${currentQuestions.length}`;
+  document.getElementById("intQuestionText").innerText = currentQuestions[currentQIndex];
+  document.getElementById("candidateAnswerInput").value = "";
+  document.getElementById("qEvalCard").classList.add("d-none");
+  document.getElementById("submitAnswerBtn").disabled = false;
+
+  const pct = ((currentQIndex + 1) / currentQuestions.length) * 100;
+  document.getElementById("intProgressBar").style.width = `${pct}%`;
+}
+
+function submitCurrentAnswer() {
+  const answer = document.getElementById("candidateAnswerInput").value;
+  if (!answer || !answer.trim()) {
+    alert("Please enter your response to the question.");
+    return;
+  }
+
+  const btn = document.getElementById("submitAnswerBtn");
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i>Evaluating Answer...`;
+
+  fetch("/api/mock-interview/evaluate-question", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      category: selectedCategory,
+      question: currentQuestions[currentQIndex],
+      answer: answer
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    btn.innerHTML = `<i class="fa-solid fa-paper-plane me-2"></i>Submit & Evaluate Answer`;
+    questionEvaluations.push(data);
+
+    document.getElementById("qEvalScore").innerText = `${data.overall_score}%`;
+    document.getElementById("qEvalRel").innerText = `${data.relevance}%`;
+    document.getElementById("qEvalAcc").innerText = `${data.technical_accuracy}%`;
+    document.getElementById("qEvalComm").innerText = `${data.communication}%`;
+    document.getElementById("qEvalClar").innerText = `${data.clarity}%`;
+    document.getElementById("qEvalPS").innerText = `${data.problem_solving}%`;
+    document.getElementById("qEvalFeedback").innerText = data.feedback;
+    document.getElementById("qEvalIdeal").innerText = data.ideal_answer;
+
+    document.getElementById("qEvalCard").classList.remove("d-none");
+  })
+  .catch(err => {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fa-solid fa-paper-plane me-2"></i>Submit & Evaluate Answer`;
+    console.error("Error evaluating answer:", err);
+    alert("Failed to evaluate answer.");
+  });
+}
+
+function proceedToNextQuestion() {
+  currentQIndex++;
+  if (currentQIndex < currentQuestions.length) {
+    renderQuestion();
+  } else {
+    submitFinalInterview();
+  }
+}
+
+function endInterviewEarly() {
+  if (questionEvaluations.length > 0) {
+    submitFinalInterview();
+  } else {
+    resetInterviewConfig();
+  }
+}
+
+function submitFinalInterview() {
+  fetch("/api/mock-interview/submit-final", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      category: selectedCategory,
+      evaluations: questionEvaluations
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("interviewActiveSection").classList.add("d-none");
+    document.getElementById("interviewReportSection").classList.remove("d-none");
+
+    document.getElementById("repOverallScore").innerText = `${data.overall_score}%`;
+    document.getElementById("repAcc").innerText = `${data.technical_accuracy}%`;
+    document.getElementById("repComm").innerText = `${data.communication}%`;
+    document.getElementById("repPS").innerText = `${data.problem_solving}%`;
+    document.getElementById("repRel").innerText = `${data.relevance}%`;
+    document.getElementById("repClar").innerText = `${data.clarity}%`;
+
+    const strBox = document.getElementById("repStrengthsContainer");
+    strBox.innerHTML = "";
+    data.strengths.forEach(s => {
+      strBox.innerHTML += `<span class="badge bg-success px-3 py-2 fs-6">${s}</span>`;
+    });
+
+    const weakBox = document.getElementById("repWeaknessContainer");
+    weakBox.innerHTML = "";
+    data.areas_to_improve.forEach(w => {
+      weakBox.innerHTML += `<span class="badge bg-warning text-dark px-3 py-2 fs-6">${w}</span>`;
+    });
+
+    const recBox = document.getElementById("repRecTopicsContainer");
+    recBox.innerHTML = "";
+    data.recommended_topics.forEach(t => {
+      recBox.innerHTML += `<span class="badge bg-light text-dark border px-3 py-2 font-monospace">${t}</span>`;
+    });
+  })
+  .catch(err => {
+    console.error("Error generating final report:", err);
+    alert("Failed to compile final report.");
+  });
+}
+
+function resetInterviewConfig() {
+  document.getElementById("interviewReportSection").classList.add("d-none");
+  document.getElementById("interviewActiveSection").classList.add("d-none");
+  document.getElementById("interviewConfigSection").classList.remove("d-none");
+}
+</script>
+{% endblock %}

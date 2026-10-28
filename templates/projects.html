@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cards-grid">
+  <article class="card wide">
+    <div class="card-header">
+      <h2><i class="fa-solid fa-diagram-project" style="color: var(--accent); margin-right: 8px;"></i> AI Project Recommendations</h2>
+      <span class="badge badge-purple">Portfolio Projects</span>
+    </div>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">
+      Explore curated project recommendations scaled by difficulty level tailored to your target role as <strong>{{ target_role }}</strong> to strengthen your resume portfolio and GitHub presence.
+    </p>
+  </article>
+
+  <div class="wide" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+    {% for proj in projects %}
+    <article class="card">
+      <div class="card-header">
+        <h3 style="font-size: 1.15rem; margin: 0; color: var(--text-strong);">{{ proj.title }}</h3>
+        <span class="badge {% if proj.level == 'Beginner' %}badge-green{% elif proj.level == 'Intermediate' %}badge-blue{% else %}badge-purple{% endif %}">{{ proj.level }}</span>
+      </div>
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin: 10px 0;">{{ proj.description }}</p>
+      
+      <div style="margin: 14px 0;">
+        <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-soft); margin-bottom: 6px;">Tech Stack</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          {% for t in proj.tech_stack %}
+          <span class="pill" style="background: rgba(99, 102, 241, 0.15); color: var(--accent-strong); font-size: 0.8rem; padding: 3px 10px; border-radius: 999px;">{{ t }}</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; border-top: 1px solid var(--border-subtle); padding-top: 12px; font-size: 0.85rem; color: var(--text-soft);">
+        <span><i class="fa-solid fa-clock" style="color: var(--warning);"></i> Est. Time: {{ proj.duration }}</span>
+        <button onclick="alert('Starter template copied! Happy coding.');" class="btn btn-secondary btn-xs"><i class="fa-solid fa-code-branch"></i> Get Template</button>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

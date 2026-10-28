@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cards-grid">
+  <article class="card wide">
+    <div class="card-header">
+      <h2><i class="fa-solid fa-briefcase" style="color: var(--accent); margin-right: 8px;"></i> Job Match Analyzer</h2>
+      <span class="badge badge-purple">ATS Match Engine</span>
+    </div>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">
+      Paste a target Job Description alongside your Resume text to analyze keyword overlap, missing skills, and receive tailored suggestions to maximize your interview callback rate.
+    </p>
+
+    <form method="POST" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+      <div class="form-group">
+        <label>Job Description Text</label>
+        <textarea name="job_description" rows="8" class="chat-input" placeholder="Paste full job description requirements here..." required>{{ request.form.get('job_description', '') }}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Your Resume Text</label>
+        <textarea name="resume_text" rows="8" class="chat-input" placeholder="Paste your resume content or bullet points here..." required>{{ request.form.get('resume_text', '') }}</textarea>
+      </div>
+      <div style="grid-column: 1 / -1;">
+        <button type="submit" class="btn btn-primary" style="padding: 12px 28px;">
+          <i class="fa-solid fa-calculator"></i> Analyze Job Match
+        </button>
+      </div>
+    </form>
+  </article>
+
+  {% if result %}
+  <article class="card wide">
+    <div class="card-header">
+      <h2><i class="fa-solid fa-chart-pie" style="color: #22c55e; margin-right: 8px;"></i> Match Analysis Results</h2>
+      <span class="badge badge-green" style="font-size: 1rem; padding: 6px 14px;">Match Score: {{ result.score }}%</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 16px;">
+      <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 12px; padding: 16px;">
+        <h4 style="color: #22c55e; margin: 0 0 10px;"><i class="fa-solid fa-circle-check"></i> Matching Keywords & Skills</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          {% for sk in result.matching_skills %}
+          <span class="pill" style="background: rgba(34, 197, 94, 0.2); color: #22c55e; font-size: 0.85rem; padding: 4px 10px; border-radius: 999px;">{{ sk }}</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 16px;">
+        <h4 style="color: #ef4444; margin: 0 0 10px;"><i class="fa-solid fa-circle-xmark"></i> Missing High-Priority Keywords</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          {% for kw in result.missing_keywords %}
+          <span class="pill" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; font-size: 0.85rem; padding: 4px 10px; border-radius: 999px;">{{ kw }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 20px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; padding: 18px;">
+      <h4 style="color: var(--accent-strong); margin: 0 0 10px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Actionable Suggestions</h4>
+      <ul style="padding-left: 20px; margin: 0; color: var(--text-main); font-size: 0.9rem;">
+        {% for sug in result.suggestions %}
+        <li style="margin-bottom: 6px;">{{ sug }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </article>
+  {% endif %}
+</div>
+{% endblock %}

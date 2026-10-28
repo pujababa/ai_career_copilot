@@ -60,6 +60,21 @@
     </div>
   </div>
 
+  <div class="chat-quick-pills px-3 py-2 d-flex flex-wrap gap-2 justify-content-center" id="quickPills">
+    <button class="btn btn-sm btn-outline-primary rounded-pill bg-white shadow-sm" onclick="sendQuickPrompt('Analyze my weaknesses based on my test scores')">
+      <i class="fa-solid fa-chart-line text-warning me-1"></i> Analyze my weaknesses
+    </button>
+    <button class="btn btn-sm btn-outline-primary rounded-pill bg-white shadow-sm" onclick="sendQuickPrompt('Give me today\'s personalized study plan')">
+      <i class="fa-solid fa-calendar-day text-info me-1"></i> Today's study plan
+    </button>
+    <button class="btn btn-sm btn-outline-primary rounded-pill bg-white shadow-sm" onclick="sendQuickPrompt('How should I explain my project in an interview?')">
+      <i class="fa-solid fa-diagram-project text-success me-1"></i> Explain my project
+    </button>
+    <button class="btn btn-sm btn-outline-primary rounded-pill bg-white shadow-sm" onclick="sendQuickPrompt('Explain my placement readiness score and how to improve it')">
+      <i class="fa-solid fa-gauge-high text-primary me-1"></i> Explain readiness score
+    </button>
+  </div>
+
   <div class="chat-input-wrapper">
     <div class="chat-input-inner">
       <form id="chat-form" style="display: flex; width: 100%; gap: 10px; align-items: flex-end;">
@@ -69,7 +84,7 @@
         </button>
       </form>
     </div>
-    <p class="chat-disclaimer">General knowledge & technical guidance. Supporting English, Hindi, Spanish.</p>
+    <p class="chat-disclaimer">Context-aware AI Career Assistant. Personalized for your target role and skills.</p>
   </div>
 </section>
 
@@ -264,11 +279,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const welcomeMsg = document.getElementById('welcome-message');
     const welcomeText = document.getElementById('welcome-text');
+    const sendBtn = document.getElementById('send-btn');
     
     if (welcomeMsg && welcomeMsg.style.display !== 'none') {
         const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
         welcomeText.innerText = randomGreeting;
     }
+
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function renderMarkdown(md) {
+        if (!md) return '';
+        let html = escapeHtml(md);
+        // Code blocks
+        html = html.replace(/```([\s\S]*?)```/g, '<pre style="background: rgba(0,0,0,0.06); padding: 8px; border-radius: 6px; overflow-x: auto;"><code>$1</code></pre>');
+        // Inline code
+        html = html.replace(/`([^`]+)`/g, '<code style="background: rgba(0,0,0,0.06); padding: 2px 4px; border-radius: 4px;">$1</code>');
+        // Headings
+        html = html.replace(/^### (.*$)/gim, '<h4 style="margin: 8px 0 4px 0; color: var(--accent-primary);">$1</h4>');
+        html = html.replace(/^## (.*$)/gim, '<h3 style="margin: 10px 0 6px 0; color: var(--accent-primary);">$1</h3>');
+        // Bold
+        html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        // Italic
+        html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+        // Bullet lists
+        html = html.replace(/^\s*[-*]\s+(.*)$/gim, '<li style="margin-left: 15px;">$1</li>');
+        // Numbered lists
+        html = html.replace(/^\s*(\d+)\.\s+(.*)$/gim, '<li style="margin-left: 15px;"><strong>$1.</strong> $2</li>');
+        // Line breaks
+        html = html.replace(/\n/g, '<br>');
+        return html;
+    }
+
+    // Format any initial AI history messages
+    document.querySelectorAll('.ai-message .message-content p').forEach(p => {
+        if (p.id !== 'welcome-text') {
+            p.innerHTML = renderMarkdown(p.innerText);
+        }
+    });
 
     scrollToBottom();
 
@@ -283,23 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
             chatForm.dispatchEvent(new Event('submit'));
         }
     });
-
-    const typeWriter = (element, text, speed = 10) => {
-        let i = 0;
-        element.innerHTML = '';
-        return new Promise(resolve => {
-            const timer = setInterval(() => {
-                if (i < text.length) {
-                    element.innerHTML += text.charAt(i);
-                    i++;
-                    scrollToBottom();
-                } else {
-                    clearInterval(timer);
-                    resolve();
-                }
-            }, speed);
-        });
-    };
 
     // --- Action Handlers ---
 
@@ -325,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(`/api/chat/pin/${id}`, { method: 'POST' });
             const data = await res.json();
             if (data.success) {
-                window.location.reload(); // Reload to apply sort
+                window.location.reload();
             }
         } catch (err) { console.error('Pin error:', err); }
     };
@@ -359,10 +397,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const message = chatInput.value.trim();
         if (!message) return;
 
+        // Prevent duplicate submissions
+        if (sendBtn) {
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        }
+
         // 1. Append User Message
         const userDiv = document.createElement('div');
         userDiv.className = 'chat-message user-message';
-        userDiv.innerHTML = `<div class="message-content"><p>${message}</p></div>`;
+        userDiv.innerHTML = `<div class="message-content"><p>${escapeHtml(message)}</p></div>`;
         chatDisplay.appendChild(userDiv);
         
         // 2. Clear Input and Scroll
@@ -392,10 +436,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // 6. Create and Append AI Message Bubble
             const aiDiv = document.createElement('div');
             aiDiv.className = 'chat-message ai-message';
+            const rawReply = data.reply || "I am here to help. What would you like to prepare next?";
+            const formattedReply = renderMarkdown(rawReply);
+
             aiDiv.innerHTML = `
                 <div class="message-content">
                     <div class="message-header">AI Career Copilot</div>
-                    <p class="ai-response-text"></p>
+                    <p class="ai-response-text">${formattedReply}</p>
                     <div class="message-actions">
                         <button class="action-btn speak-btn" title="Speak"><i class="fa-solid fa-volume-up"></i></button>
                         <button class="action-btn delete-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
@@ -403,12 +450,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             chatDisplay.appendChild(aiDiv);
-            
-            // 7. Render Text with Typewriter Effect
-            const textElement = aiDiv.querySelector('.ai-response-text');
-            const aiReply = data.reply || "AI did not respond. Try again.";
-            
-            await typeWriter(textElement, aiReply);
             scrollToBottom();
             
         } catch (error) {
@@ -420,13 +461,28 @@ document.addEventListener('DOMContentLoaded', () => {
             errorDiv.className = 'chat-message ai-message';
             errorDiv.innerHTML = `
                 <div class="message-content" style="border-color: #ef4444;">
-                    <p style="color: #ef4444;">Sorry, I encountered an error. Please try again.</p>
+                    <p style="color: #ef4444;">Sorry, I encountered an error connecting to the AI assistant. Please try asking again in a moment.</p>
                 </div>
             `;
             chatDisplay.appendChild(errorDiv);
             scrollToBottom();
+        } finally {
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+            }
+            chatInput.focus();
         }
     });
 });
+
+function sendQuickPrompt(promptText) {
+  const input = document.getElementById("chat-input");
+  const form = document.getElementById("chat-form");
+  if (input && form) {
+    input.value = promptText;
+    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+  }
+}
 </script>
 {% endblock %}
